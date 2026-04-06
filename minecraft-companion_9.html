@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛏ Minecraft Survival Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Silkscreen', 'Courier New', monospace; background: linear-gradient(180deg, #1A1A2E 0%, #16213E 100%); min-height: 100vh; color: #E0E0E0; }
+#root { max-width: 800px; margin: 0 auto; padding: 0 12px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+// ============================================================
+// DATABASE QUEST
+// ============================================================
+const QUEST_DATABASE = [
+  { id: 1, titolo: "Il Villaggio Perduto", descrizione: "Trova un villaggio che non hai ancora visitato e commercia con almeno 3 villager diversi. Segna le coordinate per tornarci!", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Bussola", "Mappa vuota", "Smeraldi x5"], ricompensa: "Nuove mappe commerciali e almeno 1 oggetto raro dai villager" },
+  { id: 2, titolo: "La Caccia al Tempio nel Deserto", descrizione: "Esplora il deserto finché non trovi un Tempio del Deserto. Attenzione alla trappola di TNT sul pavimento! Recupera il tesoro senza farti esplodere.", categoria: "Esplorazione", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Piccone di ferro", "Torce x20", "Cibo abbondante"], ricompensa: "Diamanti, smeraldi e lingotti d'oro dal tesoro del tempio" },
+  { id: 3, titolo: "Il Cartografo dell'Overworld", descrizione: "Crea 4 mappe che coprano le 4 direzioni cardinali dalla tua base. Piazza una cornice per ogni mappa nella tua base e appendile al muro.", categoria: "Esplorazione", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Tavolo da cartografia", "Carta x32", "Bussola x4", "Cornici x4"], ricompensa: "Una mappa murale completa della zona intorno alla tua base" },
+  { id: 4, titolo: "Speleologia Profonda", descrizione: "Scendi molto in profondità (le coordinate devono segnare Y=-50 o meno). Trova almeno un blocco di Deepslate Diamond Ore e torna in superficie vivo!", categoria: "Esplorazione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Piccone di diamante", "Torce x64", "Secchio d'acqua", "Cibo x32", "Armatura di ferro completa"], ricompensa: "Diamanti dalle profondità e la gloria di essere tornato vivo" },
+  { id: 5, titolo: "L'Esploratore dei Biomi", descrizione: "Visita 5 biomi diversi in una sola sessione. Per ogni bioma, raccogli un blocco caratteristico come prova del tuo passaggio.", categoria: "Esplorazione", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Barca", "Cibo abbondante", "Zaino leggero (pochi oggetti)"], ricompensa: "5 blocchi unici e la conoscenza del territorio" },
+  { id: 6, titolo: "La Fortezza Nascosta", descrizione: "Usa gli Occhi di Ender per trovare una Fortezza (Stronghold). Non devi ancora entrare nel portale dell'End — basta trovarla e segnare le coordinate!", categoria: "Esplorazione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Occhi di Ender x12", "Piccone di diamante", "Torce x64", "Cibo x32"], ricompensa: "La posizione della Fortezza, pronta per la missione finale" },
+  { id: 7, titolo: "Naufragio in Vista!", descrizione: "Trova un relitto di nave (Shipwreck) sott'acqua o sulla costa. Recupera tutti i forzieri del tesoro che contiene.", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Barca", "Pozione di respirazione acquatica (opzionale)", "Torce"], ricompensa: "Mappa del tesoro, lingotti e oggetti rari dai forzieri" },
+  { id: 8, titolo: "La Città Antica", descrizione: "Trova una Ancient City nelle profondità del mondo. Raccogli almeno un frammento di disco musicale senza svegliare il Warden!", categoria: "Esplorazione", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Armatura completa di diamante/netherite", "Stivali con Soul Speed", "Lana per silenziare i passi", "Cibo dorato"], ricompensa: "Frammenti di disco e il brivido della sopravvivenza" },
+  { id: 9, titolo: "La Torre di Guardia", descrizione: "Costruisci una torre alta almeno 20 blocchi vicino alla tua base. Deve avere una scala interna, finestre con vetro e una torcia in cima visibile da lontano.", categoria: "Costruzione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Cobblestone x200", "Vetro x16", "Scale di legno x40", "Torce x10"], ricompensa: "Un punto di riferimento visibile e un posto panoramico" },
+  { id: 10, titolo: "La Fattoria Automatica di Grano", descrizione: "Costruisci una fattoria di grano con irrigazione automatica usando acqua e un sistema di raccolta. Deve avere almeno 4 file di grano.", categoria: "Costruzione", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Zappa", "Semi di grano x32", "Secchi d'acqua x2", "Blocchi a scelta x64", "Botole o recinti"], ricompensa: "Pane infinito e mai più fame!" },
+  { id: 11, titolo: "Il Ponte dei Campioni", descrizione: "Costruisci un ponte decorativo che attraversi un fiume, un burrone o una valle. Deve avere ringhiere, lampioni e essere largo almeno 3 blocchi.", categoria: "Costruzione", difficolta: "Media", durata: 30, livello: "Inizio gioco", materiali: ["Blocchi di pietra/legno x128", "Recinti x32", "Lanterne x8", "Lastre x64"], ricompensa: "Un collegamento pratico e bello tra due zone" },
+  { id: 12, titolo: "La Camera Segreta", descrizione: "Crea una stanza segreta nella tua base, accessibile solo con un meccanismo nascosto (leva dietro un quadro, pulsante nascosto, pistoni...). Nascondici i tuoi oggetti più preziosi!", categoria: "Costruzione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Pistoni appiccicosi x4", "Redstone x16", "Leva o pulsante", "Quadro", "Forzieri x2"], ricompensa: "Un nascondiglio segreto degno di un avventuriero" },
+  { id: 13, titolo: "L'Acquario Sottomarino", descrizione: "Costruisci una stanza sottomarina con pareti di vetro da cui puoi osservare il fondale marino. Deve essere asciutta dentro e illuminata!", categoria: "Costruzione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Vetro x128", "Spugne (dal Ocean Monument)", "Lanterne marine x16", "Porta di ferro", "Conduit (opzionale)"], ricompensa: "La vista più bella di tutto il tuo mondo" },
+  { id: 14, titolo: "Il Faro della Vittoria", descrizione: "Costruisci un Faro funzionante! Devi creare la piramide di blocchi minerali alla base e attivare il faro con la Nether Star.", categoria: "Costruzione", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Nether Star x1", "Blocchi di ferro/oro/diamante x164 (per piramide completa)", "Vetro x5", "Ossidiana x3"], ricompensa: "Poteri del faro attivi e lo status symbol definitivo" },
+  { id: 15, titolo: "Il Cacciatore Notturno", descrizione: "Sopravvivi un'intera notte all'aperto combattendo i mob. Non puoi dormire e non puoi nasconderti! Conta quanti mob sconfiggi.", categoria: "Combattimento", difficolta: "Media", durata: 15, livello: "Inizio gioco", materiali: ["Spada di ferro", "Armatura di ferro completa", "Scudo", "Cibo x16", "Torce x10"], ricompensa: "XP abbondante e drop dai mob (polvere da sparo, ossa, frecce)" },
+  { id: 16, titolo: "La Sfida dello Scheletro", descrizione: "Sconfiggi 20 scheletri e raccogli abbastanza ossa per creare 30 farine d'ossa. Usa le farine per far crescere alberi o fiori!", categoria: "Combattimento", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Spada di ferro", "Scudo (fondamentale!)", "Armatura", "Cibo x8"], ricompensa: "Farina d'ossa x30 e archi dagli scheletri" },
+  { id: 17, titolo: "L'Arena dei Mob", descrizione: "Costruisci una piccola arena recintata (almeno 10x10) e attira dentro i mob di notte. Combattili tutti come un gladiatore!", categoria: "Combattimento", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Blocchi per l'arena x160", "Spada di ferro", "Arco + Frecce x32", "Armatura completa", "Cibo x16"], ricompensa: "XP, drop vari e un'arena riutilizzabile" },
+  { id: 18, titolo: "La Caccia alla Strega", descrizione: "Trova e sconfiggi una Strega! Le trovi spesso nelle paludi o di notte. Attenzione alle pozioni che ti lancia!", categoria: "Combattimento", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Arco + Frecce x16", "Armatura di ferro", "Latte (per rimuovere effetti)", "Spada di diamante"], ricompensa: "Drop di pozioni: polvere di pietra luminosa, redstone, zucchero, bastoni" },
+  { id: 19, titolo: "Il Raid del Villaggio", descrizione: "Sconfiggi un Capitano dei Pillager (quello con la bandiera), ottieni il Bad Omen, e poi difendi un villaggio da un intero Raid!", categoria: "Combattimento", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Armatura di diamante", "Spada di diamante", "Arco Potere + Frecce x64", "Scudo", "Pozioni di cura", "Totem dell'Immortale (se ce l'hai)"], ricompensa: "Sconti dai villager (Hero of the Village) e bottino dal raid" },
+  { id: 20, titolo: "La Caccia al Ghast Solitario", descrizione: "Vai nel Nether e sconfiggi un Ghast respingendo la sua palla di fuoco con la spada! È il colpo più epico del gioco.", categoria: "Combattimento", difficolta: "Difficile", durata: 30, livello: "Metà gioco", materiali: ["Armatura anti-fuoco (o Pozione di resistenza al fuoco)", "Spada di diamante", "Arco + Frecce x32", "Blocchi per ripararsi"], ricompensa: "Lacrime di Ghast (per pozioni) e vanto eterno" },
+  { id: 21, titolo: "Il Drago dell'End", descrizione: "Entra nel portale dell'End e sconfiggi l'Ender Dragon! Porta tutto il necessario, non si può tornare indietro facilmente.", categoria: "Combattimento", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Armatura di diamante/netherite incantata", "Spada incantata", "Arco Potere + Frecce x128", "Letti x7 (per l'esplosione!)", "Zucche intagliate (per gli Enderman)", "Pozioni di cura", "Blocchi x128", "Ender Pearls x16"], ricompensa: "L'Uovo di Drago, XP enormi e l'accesso alle End Cities" },
+  { id: 22, titolo: "Il Wither: Sfida Suprema", descrizione: "Evoca e sconfiggi il Wither! Preparati bene: è il boss più forte del gioco. Combattilo sottoterra per limitare i danni.", categoria: "Combattimento", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Teste di Wither Skeleton x3", "Soul Sand x4", "Armatura di netherite incantata", "Spada Sharpness V", "Pozioni di forza e cura", "Mele dorate x8", "Totem dell'Immortale"], ricompensa: "La Nether Star per costruire un Faro!" },
+  { id: 23, titolo: "La Febbre del Ferro", descrizione: "Raccogli almeno 64 lingotti di ferro in una sola sessione. Puoi minarli o usare una Iron Farm se ne hai una!", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Piccone di pietra/ferro", "Torce x32", "Cibo x16", "Secchio d'acqua"], ricompensa: "64 lingotti di ferro — abbastanza per un set completo di armatura e strumenti" },
+  { id: 24, titolo: "Diamanti o Morte!", descrizione: "Scendi fino alle profondità estreme (coordinate Y=-59) e mina finché non trovi almeno 8 diamanti. Usa la tecnica del branch mining (corridoi paralleli ogni 2 blocchi).", categoria: "Raccolta risorse", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Piccone di ferro x3", "Torce x64", "Cibo x32", "Secchio d'acqua", "Secchio di lava (per la via del ritorno)"], ricompensa: "Almeno 8 diamanti per iniziare il tuo set di diamante" },
+  { id: 25, titolo: "Il Boscaiolo Instancabile", descrizione: "Raccogli 10 stack di tronchi (640 tronchi totali!) di almeno 3 tipi di legno diversi. Pianta un albero per ogni 5 che tagli!", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Ascia di ferro", "Cibo x8"], ricompensa: "Legname infinito per qualsiasi progetto di costruzione" },
+  { id: 26, titolo: "Il Cacciatore di Libri", descrizione: "Raccogli 15 libri. Puoi trovarli nelle librerie dei villaggi, nelle fortezze, o crearli con cuoio e carta. Servono per il tavolo degli incantesimi!", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Cesoie (per le librerie)", "Canna da zucchero x27 (per la carta)", "Cuoio x5"], ricompensa: "Libri per incantesimi e librerie per il tavolo incantamenti" },
+  { id: 27, titolo: "Operazione Netherite", descrizione: "Vai nel Nether e trova Ancient Debris alle coordinate Y=15 (profondità media nel Nether). Devi trovarne almeno 4 per creare un lingotto di Netherite!", categoria: "Raccolta risorse", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Piccone di diamante con Efficienza", "Letti x10 (per far esplodere e trovare debris)", "Armatura anti-fuoco", "Cibo dorato x16"], ricompensa: "1 lingotto di Netherite — il materiale più raro del gioco!" },
+  { id: 28, titolo: "Il Giardino dei Fiori", descrizione: "Crea un giardino decorativo con almeno 8 tipi di fiori diversi. Usa farina d'ossa sui blocchi d'erba per farli spawnare!", categoria: "Farming", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Farina d'ossa x32", "Recinti x32", "Blocchi d'erba", "Secchio d'acqua"], ricompensa: "Un giardino colorato e tinture di tutti i colori" },
+  { id: 29, titolo: "L'Allevatore Esperto", descrizione: "Alleva almeno 3 tipi diversi di animali (mucche, pecore, maiali, polli, ecc.). Ogni recinto deve avere almeno 4 animali.", categoria: "Farming", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Recinti x96", "Cancelli x3", "Grano x16", "Semi x16", "Carote x8"], ricompensa: "Cibo infinito e risorse animali (lana, cuoio, piume)" },
+  { id: 30, titolo: "La Serra Sotterranea", descrizione: "Costruisci una fattoria completamente sottoterra! Deve avere illuminazione artificiale e irrigazione. Coltiva almeno 3 tipi di colture diverse.", categoria: "Farming", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Blocchi di vetro x32 (per il soffitto)", "Torce/Lanterne x16", "Secchi d'acqua x4", "Semi vari", "Zappa", "Terreno arabile"], ricompensa: "Una fattoria protetta dai mob e sempre produttiva" },
+  { id: 31, titolo: "Il Re delle Api", descrizione: "Trova un nido d'api, raccogli i favi con le cesoie (usa un falò sotto per non farle arrabbiare!) e porta le api alla tua base con i fiori.", categoria: "Farming", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Cesoie", "Fiori x8", "Bottiglie di vetro x6", "Falò x1", "Guinzaglio (opzionale)"], ricompensa: "Miele, favi e un apiario funzionante alla base" },
+  { id: 32, titolo: "La Fattoria di XP", descrizione: "Costruisci una trappola per mob che li raccolga e ti permetta di ucciderli facilmente per ottenere XP. Il design più semplice: una stanza buia con acqua che li spinge in un punto.", categoria: "Farming", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Blocchi x256", "Secchi d'acqua x8", "Botole x16", "Tramogge x4 (opzionale)", "Torce (per illuminare dove NON devono spawnare)"], ricompensa: "XP infiniti per incantare tutto quello che vuoi" },
+  { id: 33, titolo: "La Statua del Creeper", descrizione: "Costruisci una statua gigante di un Creeper usando blocchi di lana verde e nera. Deve essere alta almeno 10 blocchi!", categoria: "Sfide creative", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Lana verde x64", "Lana nera x16", "Blocchi per le impalcature"], ricompensa: "Un'opera d'arte pixelata degna di Minecraft" },
+  { id: 34, titolo: "Il Labirinto", descrizione: "Costruisci un labirinto di siepi (foglie) o muri alto almeno 3 blocchi, con un forziere premio al centro. Deve essere abbastanza grande da perdersi!", categoria: "Sfide creative", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Foglie o blocchi x512", "Torce x32", "Forziere x1", "Premio a scelta"], ricompensa: "Un minigioco per te e Samuel!" },
+  { id: 35, titolo: "La Pixel Art sul Muro", descrizione: "Crea una pixel art su una parete piatta usando blocchi di lana colorata o cemento. Scegli un soggetto semplice (spada, cuore, stella) e fallo grande almeno 8x8.", categoria: "Sfide creative", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Lana/cemento colorato x128", "Impalcature x16"], ricompensa: "Arte permanente nel tuo mondo!" },
+  { id: 36, titolo: "La Montagna Russa", descrizione: "Costruisci un percorso di minecart con salite, discese e curve. Deve essere lungo almeno 100 blocchi e tornare al punto di partenza!", categoria: "Sfide creative", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Rotaie x128", "Rotaie potenziate x32", "Redstone x16", "Minecart x1", "Blocchi per la struttura x200"], ricompensa: "Un'attrazione nel tuo mondo!" },
+  { id: 37, titolo: "Il Portale del Nether", descrizione: "Costruisci il tuo primo portale del Nether! Servono 10 blocchi di ossidiana. Se non hai un piccone di diamante, puoi creare l'ossidiana con lava e acqua.", categoria: "Nether/End", difficolta: "Media", durata: 30, livello: "Inizio gioco", materiali: ["Ossidiana x10 (o secchi di lava + acqua)", "Acciarino", "Piccone di diamante (per minare ossidiana)"], ricompensa: "Accesso al Nether e a tutte le sue risorse" },
+  { id: 38, titolo: "La Base nel Nether", descrizione: "Costruisci un piccolo rifugio sicuro nel Nether vicino al tuo portale. Deve avere un forziere con scorte d'emergenza, un letto... ah no, i letti esplodono nel Nether! Metti un Respawn Anchor.", categoria: "Nether/End", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Cobblestone x128 (i Ghast non lo distruggono)", "Forziere x1", "Cibo x32", "Torce x16", "Porta di ferro + pulsante"], ricompensa: "Un punto sicuro nel Nether per le tue spedizioni" },
+  { id: 39, titolo: "La Caccia al Blaze", descrizione: "Trova una Fortezza del Nether e sconfiggi almeno 6 Blaze per raccogliere le loro Blaze Rod. Servono per le pozioni e per gli Occhi di Ender!", categoria: "Nether/End", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Armatura completa", "Spada di diamante", "Scudo", "Pozione di resistenza al fuoco x2", "Cibo x32", "Blocchi di cobblestone x64"], ricompensa: "Blaze Rod x6+ per pozioni e Occhi di Ender" },
+  { id: 40, titolo: "L'Autostrada del Nether", descrizione: "Costruisci un tunnel sicuro e illuminato nel Nether che colleghi il tuo portale a un punto interessante (fortezza, bioma di funghi, ecc.). Ricorda: 1 blocco nel Nether = 8 nell'Overworld!", categoria: "Nether/End", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Cobblestone x512", "Torce x64", "Piccone x3", "Cibo x32", "Rotaie + minecart (opzionale per velocità)"], ricompensa: "Un sistema di trasporto rapido tra zone lontane" },
+  { id: 41, titolo: "End City: Il Saccheggio", descrizione: "Dopo aver sconfitto il Drago, trova un End Gateway e usalo per raggiungere le End Islands. Trova una End City e saccheggia il suo tesoro!", categoria: "Nether/End", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Ender Pearls x16", "Armatura di diamante incantata", "Elytra (se ne hai già una)", "Cibo x64", "Blocchi x128", "Scudo"], ricompensa: "Elytra (ali per volare!), Shulker Box e tesori rari" },
+  { id: 42, titolo: "Le Ali del Cielo", descrizione: "Se hai trovato un'Elytra, è ora di imparare a volare! Costruisci una piattaforma di lancio alta 50 blocchi e fai almeno 3 voli usando razzi.", categoria: "Nether/End", difficolta: "Media", durata: 30, livello: "Endgame", materiali: ["Elytra x1", "Razzi x32", "Blocchi per la rampa x64", "Incudine + libro Mending (per riparare le Elytra)"], ricompensa: "Padronanza del volo e libertà totale nel tuo mondo" },
+  { id: 43, titolo: "Il Pescatore Paziente", descrizione: "Pesca finché non ottieni almeno 1 oggetto raro (libro incantato, arco, canna da pesca incantata). Costruisciti un molo carino da cui pescare!", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Canna da pesca", "Blocchi per il molo x32", "Secchio d'acqua (se serve)"], ricompensa: "Pesci, tesori e un molo panoramico" },
+  { id: 44, titolo: "L'Incantatore Apprendista", descrizione: "Costruisci un setup completo per incantare: tavolo degli incantesimi circondato da 15 librerie. Poi incanta il tuo primo oggetto al livello 30!", categoria: "Raccolta risorse", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Tavolo degli incantesimi", "Librerie x15", "Lapislazzuli x10", "Diamanti per strumenti da incantare"], ricompensa: "Il tuo primo oggetto incantato al massimo livello" },
+  { id: 45, titolo: "La Ferrovia Transcontinentale", descrizione: "Costruisci una ferrovia con minecart che colleghi la tua base a un punto d'interesse lontano almeno 200 blocchi. Deve avere una stazione di partenza e una di arrivo!", categoria: "Costruzione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Rotaie x200+", "Rotaie potenziate x40", "Redstone Torch x20", "Minecart x2", "Blocchi per stazioni x128"], ricompensa: "Viaggio veloce e automatico tra due punti del mondo" },
+  { id: 46, titolo: "Il Collezionista di Teste", descrizione: "Sconfiggi uno Zombie, uno Scheletro, un Creeper e ottieni le loro teste! Per il Creeper serve farlo uccidere da un altro Creeper carico (Charged Creeper).", categoria: "Combattimento", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Tridente con Channeling (per creare Charged Creeper durante un temporale)", "Armatura completa", "Blocchi per intrappolare mob"], ricompensa: "Teste di mob rare da esporre come trofei" },
+  { id: 47, titolo: "La Mappa del Tesoro", descrizione: "Trova una Mappa del Tesoro (nei relitti o nelle rovine sottomarine) e segui le indicazioni fino al tesoro sepolto. Scava finché non lo trovi!", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Barca", "Pala di ferro", "Mappa del tesoro (da trovare)"], ricompensa: "Il Cuore del Mare e altri tesori sepolti" },
+  { id: 48, titolo: "Il Giardino Zen di Bambù", descrizione: "Trova del bambù nella giungla e crea un giardino zen alla tua base con bambù, acqua, lanterne e sabbia/ghiaia per i sentieri.", categoria: "Sfide creative", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Bambù x16", "Sabbia/ghiaia x32", "Lanterne x8", "Secchi d'acqua x2", "Lastre di pietra x16"], ricompensa: "Un angolo di pace nella tua base" },
+  { id: 49, titolo: "La Trappola per Creeper", descrizione: "Costruisci una trappola che catturi un Creeper vivo! Usa acqua, pistoni e botole per intrappolarlo in una gabbia di vetro da esporre nella tua base.", categoria: "Sfide creative", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Vetro x32", "Pistoni x4", "Botole x8", "Acqua x2", "Redstone x8", "Cartelli x4"], ricompensa: "Un Creeper domestico (in gabbia!) come mascotte della base" },
+  { id: 50, titolo: "Il Museo dei Blocchi", descrizione: "Costruisci una stanza nella tua base dove esponi almeno 20 blocchi diversi in cornici o su piedistalli, ognuno con un cartello che dice dove l'hai trovato.", categoria: "Sfide creative", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Cornici x20", "Cartelli x20", "Blocchi vari x20", "Blocchi da costruzione per il museo x128", "Lanterne x12"], ricompensa: "Un museo personalizzato della tua avventura" },
+  { id: 51, titolo: "La Sfida Vegetariana", descrizione: "Sopravvivi un'intera sessione mangiando SOLO cibo vegetale: pane, mele, carote, patate al forno, zuppa di funghi. Niente carne!", categoria: "Sfide creative", difficolta: "Facile", durata: 60, livello: "Inizio gioco", materiali: ["Semi di grano x16", "Carote x8", "Patate x8", "Funghi x4", "Ciotola x2"], ricompensa: "La soddisfazione di una sfida completata e cibo vegetale in abbondanza" },
+  { id: 52, titolo: "Il Commerciante d'Élite", descrizione: "Trova un villager Bibliotecario e commercia con lui finché non ottieni un libro incantato con Mending! Potresti dover 'resettare' il villager rompendo e ripiazzando il suo leggio.", categoria: "Farming", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Leggio x1", "Smeraldi x20+", "Carta x32 (per commerciare)", "Letto x1 (per il villager)"], ricompensa: "Il libro di Mending — l'incantesimo più prezioso del gioco!" },
+  { id: 53, titolo: "La Strada Illuminata", descrizione: "Costruisci una strada illuminata con lampioni che colleghi la tua base al punto d'interesse più vicino (villaggio, miniera, portale). Deve essere larga 3 blocchi e sicura dai mob.", categoria: "Costruzione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Blocchi pavimentazione x200", "Lanterne x20", "Recinti x20 (per i lampioni)", "Lastre x64"], ricompensa: "Un percorso sicuro e illuminato nel tuo mondo" },
+  { id: 54, titolo: "L'Avventura con la Barca", descrizione: "Costruisci una barca e naviga lungo la costa finché non trovi qualcosa di interessante (un bioma nuovo, un monumento oceanico, un'isola). Non tornare finché non hai trovato qualcosa!", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Barca x2 (una di scorta)", "Cibo x16", "Letto (per dormire sulla costa)", "Torce x10"], ricompensa: "Nuove scoperte e avventure marittime" },
+  { id: 55, titolo: "Il Guardiano delle Tartarughe", descrizione: "Trova una spiaggia con tartarughe, proteggile dai mob durante la notte, e raccogli gli Scute che rilasciano i cuccioli crescendo. Con 5 Scute puoi fare un Turtle Helmet!", categoria: "Farming", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Seagrass x16 (per far accoppiare le tartarughe)", "Torce x20", "Recinti x32", "Spada per proteggere dai mob"], ricompensa: "Turtle Helmet con Water Breathing e la gioia di proteggere le tartarughe" },
+  // --- NUOVE QUEST: 10 INIZIO GIOCO ---
+  { id: 56, titolo: "Il Primo Rifugio", descrizione: "È la tua prima notte e i mob stanno arrivando! Costruisci un rifugio di sopravvivenza prima del tramonto: deve avere muri, un tetto, una porta, un letto e almeno una torcia. Niente buchi o i mostri entrano!", categoria: "Costruzione", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Assi di legno x32", "Porta di legno x1", "Letto x1", "Torce x4"], ricompensa: "Sopravvivere alla prima notte e avere una casa base!" },
+  { id: 57, titolo: "Il Tosatore Arcobaleno", descrizione: "Trova pecore di almeno 4 colori diversi e tosale con le cesoie! Se non trovi pecore colorate, puoi tingerle tu con i fiori. Raccogli almeno 12 lane di colori diversi.", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Cesoie", "Fiori assortiti x8 (per le tinture)", "Grano x8 (per attirare le pecore)"], ricompensa: "Lana colorata per decorare e un letto del tuo colore preferito" },
+  { id: 58, titolo: "Il Fornaio del Villaggio", descrizione: "Pianta il grano, aspetta che cresca e sforna almeno 16 pagnotte di Pane! Il pane è il cibo più affidabile all'inizio: 3 grani = 1 pane. Fai la scorta!", categoria: "Farming", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Zappa di legno o ferro", "Semi di grano x32", "Secchio d'acqua x1", "Torce x4 (per la luce)"], ricompensa: "Pane x16+ e una piantagione di grano funzionante" },
+  { id: 59, titolo: "La Miniera Sicura", descrizione: "Scava una miniera con una scala di accesso sicura (scale a pioli o gradini), corridoi illuminati ogni 6 blocchi, e cartelli alle intersezioni per non perderti! Scendi in profondità — le coordinate devono segnare almeno Y=0.", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Piccone di pietra x3", "Torce x64", "Scale a pioli x32", "Cartelli x8", "Cibo x16"], ricompensa: "Una miniera organizzata e tutto il ferro e carbone che trovi lungo la strada" },
+  { id: 60, titolo: "L'Armiere Principiante", descrizione: "Raccogli abbastanza ferro per costruire un'armatura COMPLETA di ferro: elmo, corazza, gambali e stivali. Servono 24 lingotti di ferro in totale — è un bel lavoro!", categoria: "Raccolta risorse", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Piccone di pietra o ferro x2", "Fornace", "Torce x32", "Cibo x16"], ricompensa: "Armatura di ferro completa — ora sei protetto come un cavaliere!" },
+  { id: 61, titolo: "Il Guardiano della Luce", descrizione: "Piazza almeno 50 torce intorno alla tua base per creare una zona sicura dove i mob non spawnano! Ricorda: i mob appaiono dove il livello di luce è basso. Illumina tutto!", categoria: "Costruzione", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Torce x50 (13 carbone + 13 bastoni)", "Piccone per il carbone"], ricompensa: "Una base sicura dove i Creeper non ti sorprenderanno più di notte" },
+  { id: 62, titolo: "La Caccia al Ragno", descrizione: "Aspetta la notte e caccia almeno 10 ragni! Raccogli tutti i fili che lasciano. Con quei fili, costruisciti un Arco e una Canna da Pesca.", categoria: "Combattimento", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Spada di legno o pietra", "Armatura di cuoio (se ce l'hai)", "Torce x8"], ricompensa: "Arco + Canna da pesca + fili di scorta per dopo" },
+  { id: 63, titolo: "Il Contadino Provetto", descrizione: "Crea un orto con almeno 4 colture diverse: grano, carote, patate e barbabietole. Ogni filare deve avere almeno 8 piante. L'acqua deve essere a massimo 4 blocchi di distanza!", categoria: "Farming", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Zappa x1", "Secchio d'acqua x2", "Semi di grano x8", "Carote x8", "Patate x8", "Semi di barbabietola x8", "Recinti x32"], ricompensa: "Un orto che produce 4 tipi di cibo diversi — mai più fame!" },
+  { id: 64, titolo: "Il Cercatore di Grotte", descrizione: "Trova l'ingresso di una grotta naturale e esplorala fino in fondo! Piazza torce mentre avanzi e lascia dei cartelli per ritrovare la strada del ritorno. Raccogli tutto il minerale che trovi.", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Piccone di pietra x2", "Torce x48", "Spada di pietra", "Cibo x12", "Cartelli x4"], ricompensa: "Minerali vari (carbone, ferro, rame) e l'emozione di esplorare l'ignoto" },
+  { id: 65, titolo: "Il Fabbro Apprendista", descrizione: "Costruisci TUTTI gli strumenti di ferro: piccone, ascia, pala, zappa e spada. Servono 11 lingotti di ferro in totale più bastoni. Mettili in un baule dedicato con un cartello 'Attrezzi'!", categoria: "Raccolta risorse", difficolta: "Media", durata: 30, livello: "Inizio gioco", materiali: ["Piccone di pietra x2", "Fornace", "Torce x16", "Cibo x8"], ricompensa: "Un set completo di strumenti di ferro — sei pronto per qualsiasi lavoro!" },
+  // --- NUOVE QUEST: 10 METÀ GIOCO ---
+  { id: 66, titolo: "L'Alchimista della Velocità", descrizione: "Prepara la tua prima Pozione di Velocità! Devi andare nel Nether per le Blaze Rod, costruire un Alambicco, e poi combinare Nether Wart + Zucchero in una bottiglia d'acqua.", categoria: "Nether/End", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Alambicco (Brewing Stand)", "Bottiglie di vetro x3", "Nether Wart x3", "Zucchero x3", "Blaze Powder come combustibile"], ricompensa: "3 Pozioni di Velocità — corri come il vento per 3 minuti!" },
+  { id: 67, titolo: "L'Incursione al Monumento Oceanico", descrizione: "Trova un Monumento Oceanico (la grande struttura dei Guardiani nell'oceano profondo), entra e recupera almeno 1 blocco di Spugna dall'Elder Guardian. Preparati bene — è una delle sfide più dure!", categoria: "Combattimento", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Armatura di diamante", "Pozione di Respirazione acquatica x3", "Pozione di Visione notturna x2", "Spada di diamante", "Latte x3 (per Mining Fatigue)", "Cibo x32"], ricompensa: "Spugne, blocchi di Prismarine e il diritto di vantarti per anni" },
+  { id: 68, titolo: "La Sala dei Commerci", descrizione: "Costruisci una sala commerci con almeno 4 postazioni per villager. Ogni postazione deve avere un letto, un blocco professione e cartelli per ricordarti chi vende cosa. È il tuo centro commerciale personale!", categoria: "Costruzione", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Letti x4", "Leggii/Tavoli da fabbro/Altiforni x4 (blocchi professione)", "Recinti x32", "Cancelli x4", "Cartelli x8", "Torce x16"], ricompensa: "Un sistema di commercio organizzato per trovare Mending, diamanti e tutto il necessario" },
+  { id: 69, titolo: "Il Triplo Tesoro Sepolto", descrizione: "Trova e dissotterra 3 tesori sepolti diversi! Procurati le mappe del tesoro dai relitti di nave o dalle rovine sottomarine, poi segui le X rosse. Scava sulla X fino a trovare il forziere!", categoria: "Esplorazione", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Barca x2", "Pala di ferro", "Mappe del tesoro (da trovare)", "Cibo x16", "Pozione di respirazione acquatica (opzionale)"], ricompensa: "3 Cuori del Mare, diamanti, lingotti e oggetti rari" },
+  { id: 70, titolo: "La Fonderia Automatica", descrizione: "Costruisci una fornace automatica con tramogge! Una tramoggia sopra che carica gli oggetti da fondere, e una sotto che raccoglie i risultati in un baule. Bonus: fanne due, una per il cibo e una per i minerali!", categoria: "Costruzione", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Fornace x2", "Tramogge x4", "Bauli x4", "Blocchi per la struttura x32"], ricompensa: "Non dovrai più aspettare davanti alla fornace — lavora da sola!" },
+  { id: 71, titolo: "L'Alchimista Esperto", descrizione: "Prepara 3 pozioni diverse a tua scelta! Suggerimenti: Velocità (Nether Wart + Zucchero), Forza (Nether Wart + Blaze Powder), Cura (Nether Wart + Glistering Melon). Segna le ricette su cartelli vicino all'alambicco!", categoria: "Nether/End", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Alambicco", "Bottiglie di vetro x9", "Nether Wart x9", "Ingredienti vari x3", "Blaze Powder per il combustibile", "Cartelli x3"], ricompensa: "3 tipi di pozioni e la conoscenza dell'alchimia di Minecraft!" },
+  { id: 72, titolo: "Il Domatore di Cavalli", descrizione: "Trova un cavallo in pianura, domalo saltandoci sopra ripetutamente finché non ti accetta! Poi crafta una sella... ah no, le selle non si craftano! Trovane una in un dungeon o comprala da un Leatherworker.", categoria: "Farming", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Mele d'oro x2 (per far accoppiare i cavalli)", "Guinzaglio x1", "Recinti x32 (per la stalla)", "Sella (da trovare in un dungeon!)"], ricompensa: "Un cavallo domato e una stalla — il modo più veloce di viaggiare!" },
+  { id: 73, titolo: "La Fortezza di Ghiaccio", descrizione: "Trova un bioma innevato e costruisci una fortezza usando blocchi di neve compatta e ghiaccio compatto! Deve avere almeno 4 stanze, un tetto e torce. Attenzione: la neve si scioglie vicino alle fonti di calore!", categoria: "Sfide creative", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Pala x2 (per la neve)", "Piccone con Silk Touch (per il ghiaccio)", "Lanterne (non sciolgono la neve vicina)", "Blocchi di neve x256"], ricompensa: "Un castello di ghiaccio degno della Regina delle Nevi!" },
+  { id: 74, titolo: "Il Cacciatore di Enderman", descrizione: "Sconfiggi almeno 8 Enderman e raccogli le loro Perle di Ender! Trucco: mettiti sotto un riparo alto 2 blocchi — gli Enderman sono alti 3 e non possono raggiungerti. Guardali negli occhi per attirarli!", categoria: "Combattimento", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Spada di diamante", "Armatura di diamante", "Zucca intagliata (da mettere in testa per non attirare gli Enderman per sbaglio)", "Blocchi x16", "Cibo x16"], ricompensa: "Perle di Ender x8 — fondamentali per trovare la Fortezza e andare all'End!" },
+  { id: 75, titolo: "La Fattoria delle Zucche", descrizione: "Crea una fattoria di zucche e meloni! Pianta i semi su terra arata con un blocco libero di fianco dove il frutto possa crescere. Le zucche servono per le Pumpkin Pie e come elmetto anti-Enderman!", categoria: "Farming", difficolta: "Media", durata: 30, livello: "Metà gioco", materiali: ["Semi di zucca x8", "Semi di melone x8", "Zappa", "Secchio d'acqua x2", "Recinti x24", "Torce x8"], ricompensa: "Zucche e meloni infiniti — cibo, commercio e elmetti anti-Enderman!" },
+  // ========== NUOVE QUEST — INIZIO GIOCO (10) ==========
+  { id: 76, titolo: "La Casa sull'Albero", descrizione: "Trova un grande albero (quercia grande o giungla) e costruiscici sopra una casetta! Deve avere un pavimento, pareti, un tetto e una scala per salire. Punti bonus se aggiungi una terrazza panoramica.", categoria: "Costruzione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Assi di legno x64", "Scale a pioli x20", "Vetro x8", "Porta di legno x1", "Torce x6", "Recinti x12 (per la terrazza)"], ricompensa: "Una base segreta tra le foglie dove i mob non ti trovano!" },
+  { id: 77, titolo: "Il Cacciatore di Polli", descrizione: "Trova almeno 8 polli, sconfiggili e raccogli le piume. Con quelle piume, più selce e bastoni, costruisci almeno 16 frecce. Poi prova a colpire un bersaglio (un blocco di lana su un muro) a 20 blocchi di distanza!", categoria: "Combattimento", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Spada di legno", "Arco (se ce l'hai già)", "Ghiaia x16 (per ottenere la selce)"], ricompensa: "Frecce x16+ e la tua prima pratica di tiro con l'arco!" },
+  { id: 78, titolo: "Il Cercatore di Funghi", descrizione: "Trova almeno 1 fungo rosso e 1 fungo marrone, poi costruisci una Ciotola e preparati una bella Zuppa di Funghi! I funghi crescono nei posti bui: grotte, foreste scure, sotto gli alberi grandi e nelle paludi.", categoria: "Raccolta risorse", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Ciotola x2", "Torce x8 (per esplorare le grotte dove crescono)"], ricompensa: "Zuppa di funghi — ottimo cibo che non si stacka ma riempie tanta fame!" },
+  { id: 79, titolo: "L'Esploratore della Costa", descrizione: "Segui la costa in una direzione sola per almeno 500 blocchi! Lungo la strada cerca: conchiglie, relitti, rovine sottomarine e forzieri. Segna le coordinate di tutto quello che trovi di interessante.", categoria: "Esplorazione", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Barca x2", "Cibo x16", "Cartelli x6 (per segnare i punti interessanti)", "Letto x1"], ricompensa: "Nuove scoperte lungo la costa e forse una mappa del tesoro!" },
+  { id: 80, titolo: "Il Cacciatore di Zombi", descrizione: "Sopravvivi alla notte e sconfiggi almeno 15 zombi! Raccogli tutta la carne marcia che lasciano — puoi usarla per commerciare con i villager Preti o per attrarre i lupi da addomesticare.", categoria: "Combattimento", difficolta: "Facile", durata: 15, livello: "Inizio gioco", materiali: ["Spada di pietra o ferro", "Scudo", "Armatura di ferro (almeno il petto)", "Cibo x8", "Torce x8"], ricompensa: "XP, carne marcia x15+ e occasionalmente lingotti di ferro o carote dai drop rari" },
+  { id: 81, titolo: "La Fattoria di Cactus", descrizione: "Trova un deserto, raccogli almeno 8 cactus e costruisci una fattoria automatica alla base! I cactus crescono sulla sabbia e si rompono se toccano un blocco di fianco. Trucco: piazza un blocco sopra per far cadere i pezzi.", categoria: "Farming", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Sabbia x16", "Recinti x8 (i cactus si rompono contro i recinti!)", "Secchi d'acqua x2", "Tramoggia x1 (opzionale, per raccolta automatica)"], ricompensa: "Tintura verde infinita e un sistema di smaltimento oggetti (buttali nei cactus!)" },
+  { id: 82, titolo: "Il Minatore Ordinato", descrizione: "Nella tua miniera, piazza 5 bauli e organizzali per tipo di materiale. Metti un cartello su ognuno: Ferro, Carbone, Pietrisco, Preziosi (diamanti/oro/redstone), Varie. Poi riempi ogni baule con almeno 1 stack del materiale giusto.", categoria: "Raccolta risorse", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Bauli x5", "Cartelli x5", "Torce x12", "Piccone di ferro x2"], ricompensa: "Una miniera organizzata dove trovi tutto al volo — niente più caos nell'inventario!" },
+  { id: 83, titolo: "Il Panettiere e il Cuoco", descrizione: "Prepara 3 cibi diversi! Pane (3 grani), Zuppa di funghi (ciotola + 2 funghi) e Bistecca cotta (cuoci la carne nella fornace). Metti tutto in un baule 'Dispensa' con un cartello.", categoria: "Farming", difficolta: "Facile", durata: 30, livello: "Inizio gioco", materiali: ["Fornace x1", "Zappa x1", "Semi di grano x12", "Ciotola x2", "Carbone x8 (per cuocere)"], ricompensa: "Scorte di 3 cibi diversi — varietà significa sopravvivenza!" },
+  { id: 84, titolo: "La Diga del Costruttore", descrizione: "Trova un fiume e costruisci una diga che lo blocchi completamente! Usa terra, pietrisco o qualsiasi blocco. La diga deve essere alta almeno 3 blocchi e creare un laghetto a monte. Aggiungi una passerella sopra per attraversare.", categoria: "Costruzione", difficolta: "Media", durata: 30, livello: "Inizio gioco", materiali: ["Blocchi a scelta x128", "Pala x1", "Lastre x16 (per la passerella)", "Lanterne x4"], ricompensa: "Un lago artificiale e un passaggio sicuro sul fiume!" },
+  { id: 85, titolo: "Il Primo Diamante!", descrizione: "Questa è LA quest. Scendi in profondità, trova il tuo primissimo diamante e torna in superficie VIVO. Non devi trovarne tanti — basta 1! Ma devi tornare a casa con il diamante nello zaino.", categoria: "Raccolta risorse", difficolta: "Media", durata: 60, livello: "Inizio gioco", materiali: ["Piccone di ferro x2", "Torce x48", "Secchio d'acqua x1", "Cibo x24", "Scala a pioli x32"], ricompensa: "Il tuo primo diamante — custodiscilo come un tesoro!" },
+  // ========== NUOVE QUEST — METÀ GIOCO (10) ==========
+  { id: 86, titolo: "Il Maestro delle Cure", descrizione: "Prepara le Pozioni di Cura istantanea! Servono: Nether Wart + Glistering Melon Slice (fetta di melone dorata: 1 fetta di melone + 8 pepite d'oro). Fanne almeno 3 e tieni sempre una scorta d'emergenza.", categoria: "Nether/End", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Alambicco", "Bottiglie di vetro x3", "Nether Wart x3", "Fetta di melone x3", "Pepite d'oro x24", "Blaze Powder per il combustibile"], ricompensa: "3 Pozioni di Cura — ti salvano la vita nei combattimenti!" },
+  { id: 87, titolo: "Il Guardiano di Ferro", descrizione: "Costruisci un Iron Golem per proteggere il tuo villaggio! Servono 4 blocchi di ferro (36 lingotti!) piazzati a T, con una zucca intagliata in cima. Il Golem attaccherà tutti i mob ostili in zona.", categoria: "Costruzione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Blocchi di ferro x4 (= 36 lingotti di ferro!)", "Zucca intagliata x1 (tosa una zucca con le cesoie)", "Cesoie x1"], ricompensa: "Un guardiano gigante che protegge il villaggio — e fa paura ai mob!" },
+  { id: 88, titolo: "L'Esploratore del Nether", descrizione: "Visita almeno 3 biomi diversi del Nether! Ce ne sono 5 in totale: Nether Wastes (rosso classico), Soul Sand Valley (azzurro con scheletri), Crimson Forest (rosso con funghi), Warped Forest (blu con Enderman), Basalt Deltas (grigio con lava).", categoria: "Esplorazione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Armatura di ferro completa", "Pozione di resistenza al fuoco x2", "Cibo x32", "Blocchi di cobblestone x128", "Torce x48", "Arco + Frecce x32"], ricompensa: "Conoscenza del Nether e risorse uniche da ogni bioma" },
+  { id: 89, titolo: "Il Mercante Ambulante", descrizione: "Trova un villaggio e commercia con almeno 5 villager di professioni diverse! Ogni professione ha un blocco lavoro diverso: Bibliotecario (leggio), Fabbro (fucina), Contadino (composter), Cartografo (tavolo da cartografia), Prete (alambicco). Commercia almeno 1 volta con ognuno.", categoria: "Farming", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Smeraldi x20 (commercia con il Contadino per ottenerli velocemente)", "Carta x32", "Carbone x16", "Cibo vario per commerci"], ricompensa: "Sblocchi di secondo livello dai villager e oggetti rari in vendita" },
+  { id: 90, titolo: "La Torre dell'Incantatore", descrizione: "Costruisci una torre dedicata agli incantesimi! Piano terra: tavolo degli incantesimi con 15 librerie attorno. Piano sopra: incudine per combinare libri. In cima: una lanterna e una vista panoramica. Incanta almeno 3 oggetti!", categoria: "Costruzione", difficolta: "Difficile", durata: 60, livello: "Metà gioco", materiali: ["Tavolo degli incantesimi", "Librerie x15", "Incudine", "Lapislazzuli x12", "Blocchi per la torre x200", "Lanterne x8", "Scale a pioli x32"], ricompensa: "Un centro di incantamento completo e 3 oggetti incantati!" },
+  { id: 91, titolo: "Il Ponte sulla Lava", descrizione: "Nel Nether, costruisci un ponte sicuro che attraversi un lago di lava! Deve essere largo almeno 3 blocchi, con ringhiere di cobblestone ai lati (i Ghast non lo distruggono). Lungo almeno 50 blocchi.", categoria: "Costruzione", difficolta: "Difficile", durata: 30, livello: "Metà gioco", materiali: ["Cobblestone x256", "Recinti di pietra x64 (per le ringhiere)", "Torce x16", "Scudo (per i Ghast!)", "Pozione di resistenza al fuoco x1"], ricompensa: "Un passaggio sicuro sulla lava — fondamentale per esplorare il Nether" },
+  { id: 92, titolo: "Il Collezionista di Dischi", descrizione: "Trova almeno 2 dischi musicali! Il modo migliore: fai uccidere uno Scheletro da un Creeper. Attira il Creeper verso di te, poi spostati in modo che lo Scheletro lo colpisca con le frecce. Quando il Creeper muore, droppa un disco!", categoria: "Raccolta risorse", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Scudo (fondamentale!)", "Armatura di ferro", "Jukebox x1 (se ce l'hai)", "Torce per gestire gli spawn", "Tanta pazienza!"], ricompensa: "Dischi musicali rari e la soddisfazione di una tecnica difficilissima!" },
+  { id: 93, titolo: "Il Cercatore di Spawner", descrizione: "Trova un dungeon sotterraneo (stanzetta di pietrisco con uno spawner al centro e 1-2 forzieri). Non distruggerlo! Illumina la stanza con torce per disattivarlo, poi progetta come trasformarlo in una farm di XP.", categoria: "Esplorazione", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Piccone di ferro", "Torce x32", "Secchio d'acqua x2", "Cartelli x4 (per segnare il percorso)", "Cibo x16"], ricompensa: "Uno spawner preziosissimo — la base per una farm di XP infinita!" },
+  { id: 94, titolo: "La Mappa Murale Gigante", descrizione: "Crea una mappa murale 3x3 nella tua base! Servono 9 mappe. Esplora in tutte le direzioni per riempirle, poi appendile in cornici su un muro. Avrai una vista dall'alto enorme del tuo mondo!", categoria: "Sfide creative", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Mappe x9", "Cornici x9", "Bussole x9 (per le mappe)", "Carta x72 (per le mappe)", "Cibo x32 (per esplorare)"], ricompensa: "Una mappa murale gigante e la conoscenza totale del territorio!" },
+  { id: 95, titolo: "La Trappola Anti-Creeper", descrizione: "Costruisci un sistema di difesa intorno alla tua base! Usa una trincea di acqua larga 2 blocchi (i Creeper non possono esplodere nell'acqua), muri di cobblestone alti 2 e cancelli di ferro agli ingressi. La base diventa una fortezza!", categoria: "Costruzione", difficolta: "Media", durata: 60, livello: "Metà gioco", materiali: ["Cobblestone x256", "Secchi d'acqua x8", "Porte di ferro x2", "Pulsanti x2 (per le porte)", "Torce x32", "Recinti x48"], ricompensa: "Una base anti-Creeper dove dormire tranquilli!" },
+  // ========== NUOVE QUEST — ENDGAME (10) ==========
+  { id: 96, titolo: "Il Cacciatore di Shulker", descrizione: "Nelle End City, sconfiggi almeno 4 Shulker (i mob viola attaccati ai blocchi che sparano proiettili di levitazione) e raccogli i loro gusci. Con 2 gusci + 1 baule crafti una Shulker Box — il miglior contenitore del gioco!", categoria: "Combattimento", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Armatura di diamante/netherite incantata", "Spada incantata", "Arco Potere + Frecce x64", "Ender Pearls x8", "Cibo x32", "Blocchi x64"], ricompensa: "Shulker Shells x4+ per 2 Shulker Box — valigie che mantengono il contenuto!" },
+  { id: 97, titolo: "L'Araldo della Netherite", descrizione: "Aggiorna almeno 1 pezzo del tuo equipaggiamento di diamante a Netherite! Devi: trovare 4 Ancient Debris nel Nether (Y=15), fonderne 4 per ottenere Netherite Scrap, combinare 4 Scrap + 4 lingotti d'oro = 1 lingotto di Netherite. Poi usa il Smithing Table!", categoria: "Raccolta risorse", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Piccone di diamante con Efficienza", "Letti x12 (per far esplodere e cercare debris)", "Armatura anti-fuoco", "Tavolo da Smithing", "Cibo dorato x16"], ricompensa: "Il tuo primo equipaggiamento di Netherite — il materiale definitivo!" },
+  { id: 98, titolo: "La Città nel Cielo", descrizione: "Costruisci una base sospesa in aria, alta almeno 80 blocchi da terra, raggiungibile SOLO con l'Elytra e i razzi! Deve avere: una piattaforma di atterraggio, una stanza con bauli, un letto e una vista mozzafiato.", categoria: "Costruzione", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Elytra", "Razzi x64", "Blocchi x256", "Vetro x64", "Letto x1", "Bauli x4", "Lanterne x12"], ricompensa: "La base più esclusiva possibile — nessun mob può arrivarci!" },
+  { id: 99, titolo: "Il Gran Tour dell'End", descrizione: "Dopo aver sconfitto il Drago, usa gli End Gateway per esplorare le End Islands. Trova e saccheggia almeno 3 End City diverse! Segna le coordinate di ognuna per tornare a prendere il resto del bottino.", categoria: "Esplorazione", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Elytra + Razzi x128", "Armatura di netherite", "Ender Pearls x16", "Cibo x64", "Blocchi x128", "Bauli Shulker vuoti (per il bottino)"], ricompensa: "Elytra di scorta, Shulker Box e i tesori più rari del gioco" },
+  { id: 100, titolo: "Il Campione dei Raid", descrizione: "Sconfiggi un Raid completo al livello massimo di difficoltà! Preparati con pozioni, armature incantate e torri di difesa nel villaggio. I Ravager (le bestie giganti) e gli Evoker sono i nemici più duri.", categoria: "Combattimento", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Armatura di netherite incantata", "Spada Sharpness V", "Arco Potere V + Frecce x128", "Pozioni di cura x6", "Pozioni di forza x3", "Mele dorate x8", "Totem dell'Immortale x2"], ricompensa: "Hero of the Village (sconti pazzi dai villager) e bottino epico dal raid" },
+  { id: 101, titolo: "Il Laboratorio delle Pozioni Splash", descrizione: "Trasforma 3 pozioni normali in Pozioni Splash (lanciabili)! Aggiungi Polvere da Sparo alle pozioni nell'alambicco. Prepara: Splash di Cura (per curarti al volo), Splash di Veleno (contro i mob) e Splash di Debolezza (per curare i villager zombie!).", categoria: "Nether/End", difficolta: "Difficile", durata: 60, livello: "Endgame", materiali: ["Alambicco", "Pozioni già preparate x3", "Polvere da sparo x3", "Blaze Powder per il combustibile", "Bottiglie di vetro x6"], ricompensa: "3 Splash Potions — armi a distanza e cura i villager zombie con Debolezza + Mela d'oro!" },
+  { id: 102, titolo: "La Fabbrica di Razzi", descrizione: "Costruisci una scorta enorme di razzi per l'Elytra! Servono carta + polvere da sparo. Per la polvere, caccia i Creeper di notte (o usa una Creeper Farm). Obiettivo: almeno 3 stack (192 razzi)!", categoria: "Raccolta risorse", difficolta: "Difficile", durata: 60, livello: "Endgame", materiali: ["Carta x192 (= 192 canne da zucchero!)", "Polvere da sparo x192 (caccia TANTI Creeper)", "Piantagione di canna da zucchero grande"], ricompensa: "192 razzi — voli illimitati con l'Elytra per settimane!" },
+  { id: 103, titolo: "Il Museo dei Trofei", descrizione: "Costruisci una stanza museo e esponi almeno 10 trofei del tuo viaggio: il primo diamante, una Blaze Rod, una Perla di Ender, una Nether Star, uno Shulker Shell, un Tridente, un Totem... ogni trofeo in una cornice con un cartello che racconta la storia!", categoria: "Sfide creative", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Cornici x10", "Cartelli x10", "Blocchi decorativi x128", "Lanterne x12", "Trofei vari dal tuo viaggio"], ricompensa: "Un museo della tua avventura — ogni oggetto racconta una storia!" },
+  { id: 104, titolo: "Lo Sfidante delle Torri", descrizione: "Trova una Pillager Outpost (torre dei Pillager) e conquistala! Sconfiggi tutti i Pillager, il Capitano compreso, poi trasforma la torre nella tua base avanzata: aggiungi letti, bauli e illuminazione.", categoria: "Combattimento", difficolta: "Difficile", durata: 60, livello: "Endgame", materiali: ["Armatura di diamante/netherite", "Spada incantata", "Scudo", "Arco + Frecce x64", "Letti x2", "Bauli x2", "Torce x32"], ricompensa: "Una torre conquistata come base avanzata e il Bad Omen per un futuro Raid!" },
+  { id: 105, titolo: "Il Viaggio Senza Ritorno", descrizione: "La sfida definitiva: parti dalla tua base con SOLO l'Elytra, una spada, 1 stack di cibo e 32 razzi. Vola il più lontano possibile, sopravvivi con quello che trovi, e torna a casa vivo. Segna le coordinate di partenza!", categoria: "Sfide creative", difficolta: "Epica", durata: 60, livello: "Endgame", materiali: ["Elytra", "Razzi x32", "Spada di netherite", "Cibo x64", "NIENT'ALTRO — questa è la sfida!"], ricompensa: "La gloria di essere sopravvissuto con quasi niente e le storie da raccontare!" },
+];
+
+const CATEGORIE = ["Tutte", "Esplorazione", "Costruzione", "Combattimento", "Raccolta risorse", "Farming", "Sfide creative", "Nether/End"];
+const DIFFICOLTA = ["Tutte", "Facile", "Media", "Difficile", "Epica"];
+const DURATE = [{ label: "Tutte", value: 0 }, { label: "15 min", value: 15 }, { label: "30 min", value: 30 }, { label: "1 ora", value: 60 }];
+const LIVELLI = ["Tutti", "Inizio gioco", "Metà gioco", "Endgame"];
+const NUM_QUEST = [1, 3, 5];
+const DIFF_COLORS = { "Facile": "#5D8C3E", "Media": "#D4A017", "Difficile": "#C0392B", "Epica": "#8E44AD" };
+
+// ============================================================
+// DATABASE CRAFTING
+// ============================================================
+const CRAFTING_DB = [
+  { id: "wooden_pickaxe", nome: "Piccone di legno", categoria: "⛏ Strumenti", griglia: [["plank","plank","plank"],[null,"stick",null],[null,"stick",null]], ingredienti: { plank: { q: 3, come: "Metti 1 tronco nel tavolo da lavoro → ottieni 4 assi" }, stick: { q: 2, come: "Metti 2 assi in verticale → ottieni 4 bastoni" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Puncha o taglia qualsiasi albero" }] },
+  { id: "stone_pickaxe", nome: "Piccone di pietra", categoria: "⛏ Strumenti", griglia: [["cobblestone","cobblestone","cobblestone"],[null,"stick",null],[null,"stick",null]], ingredienti: { cobblestone: { q: 3, come: "Mina la pietra con il piccone di legno" }, stick: { q: 2, come: "2 assi in verticale → 4 bastoni" } }, materieBase: [{ id: "cobblestone", q: 3, come: "⛏ Mina la pietra grigia sottoterra" }, { id: "log", q: 1, come: "🪓 Taglia un albero per i bastoni" }] },
+  { id: "iron_pickaxe", nome: "Piccone di ferro", categoria: "⛏ Strumenti", griglia: [["iron_ingot","iron_ingot","iron_ingot"],[null,"stick",null],[null,"stick",null]], ingredienti: { iron_ingot: { q: 3, come: "Fondi il ferro grezzo nella fornace" }, stick: { q: 2, come: "2 assi in verticale → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 3, come: "⛏ Mina il ferro sottoterra (tra il livello Y=16 e Y=72, cioè profondità media), ha puntini marroncini" }, { id: "coal", q: 1, come: "🔥 Per la fornace — si trova facilmente in grotte e montagne" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "diamond_pickaxe", nome: "Piccone di diamante", categoria: "⛏ Strumenti", griglia: [["diamond","diamond","diamond"],[null,"stick",null],[null,"stick",null]], ingredienti: { diamond: { q: 3, come: "Si trovano in profondità, molto in profondità — guarda le coordinate: Y tra -64 e -59" }, stick: { q: 2, come: "2 assi in verticale → 4 bastoni" } }, materieBase: [{ id: "diamond", q: 3, come: "💎 Scava in profondità molto in profondità — le coordinate devono segnare Y=-59 o meno! Usa il piccone di ferro. Sono blocchi azzurri brillanti" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "crafting_table", nome: "Tavolo da lavoro", categoria: "📦 Base", griglia: [["plank","plank",null],["plank","plank",null],[null,null,null]], ingredienti: { plank: { q: 4, come: "Metti 1 tronco nell'inventario → ottieni 4 assi" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Puncha qualsiasi albero!" }] },
+  { id: "furnace", nome: "Fornace", categoria: "📦 Base", griglia: [["cobblestone","cobblestone","cobblestone"],["cobblestone",null,"cobblestone"],["cobblestone","cobblestone","cobblestone"]], ingredienti: { cobblestone: { q: 8, come: "Mina la pietra con il piccone" } }, materieBase: [{ id: "cobblestone", q: 8, come: "⛏ Scava la pietra grigia sottoterra — ne serve parecchia!" }] },
+  { id: "chest", nome: "Baule", categoria: "📦 Base", griglia: [["plank","plank","plank"],["plank",null,"plank"],["plank","plank","plank"]], ingredienti: { plank: { q: 8, come: "1 tronco → 4 assi, quindi servono 2 tronchi" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Taglia 2 alberi" }] },
+  { id: "torch", nome: "Torcia (x4)", categoria: "📦 Base", griglia: [["coal",null,null],["stick",null,null],[null,null,null]], ingredienti: { coal: { q: 1, come: "Mina il carbone (blocchi neri con puntini)" }, stick: { q: 1, come: "2 assi in verticale → 4 bastoni" } }, materieBase: [{ id: "coal", q: 1, come: "⛏ Blocchi neri in grotte e montagne — facilissimo da trovare!" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "wooden_sword", nome: "Spada di legno", categoria: "⚔ Armi", griglia: [["plank",null,null],["plank",null,null],["stick",null,null]], ingredienti: { plank: { q: 2, come: "1 tronco → 4 assi" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Puncha un albero" }] },
+  { id: "iron_sword", nome: "Spada di ferro", categoria: "⚔ Armi", griglia: [["iron_ingot",null,null],["iron_ingot",null,null],["stick",null,null]], ingredienti: { iron_ingot: { q: 2, come: "Fondi il ferro grezzo nella fornace" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 2, come: "⛏ Ferro sottoterra (profondità media, tra Y=16 e Y=72)" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }, { id: "log", q: 1, come: "🪓 Per il bastone" }] },
+  { id: "diamond_sword", nome: "Spada di diamante", categoria: "⚔ Armi", griglia: [["diamond",null,null],["diamond",null,null],["stick",null,null]], ingredienti: { diamond: { q: 2, come: "Scava molto in profondità — fermati quando Y segna -59" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "diamond", q: 2, come: "💎 Scava fino in fondo, Y=-59 con piccone di ferro" }, { id: "log", q: 1, come: "🪓 Per il bastone" }] },
+  { id: "bow", nome: "Arco", categoria: "⚔ Armi", griglia: [[null,"stick","string"],["stick",null,"string"],[null,"stick","string"]], ingredienti: { stick: { q: 3, come: "2 assi → 4 bastoni" }, string: { q: 3, come: "Sconfiggi i ragni! Escono di notte" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Per i bastoni" }, { id: "string", q: 3, come: "🕷 Uccidi i ragni di notte — ogni ragno lascia 0-2 fili" }] },
+  { id: "arrow", nome: "Freccia (x4)", categoria: "⚔ Armi", griglia: [["flint",null,null],["stick",null,null],["feather",null,null]], ingredienti: { flint: { q: 1, come: "Rompi la ghiaia col piccone — a volte esce la selce" }, stick: { q: 1, come: "2 assi → 4 bastoni" }, feather: { q: 1, come: "Uccidi i polli!" } }, materieBase: [{ id: "flint", q: 1, come: "🪨 Scava la ghiaia (blocchi grigi che cadono) — 10% di probabilità!" }, { id: "log", q: 1, come: "🪓 Per il bastone" }, { id: "feather", q: 1, come: "🐔 I polli lasciano piume quando li sconfiggi" }] },
+  { id: "shield", nome: "Scudo", categoria: "⚔ Armi", griglia: [["plank","iron_ingot","plank"],["plank","plank","plank"],[null,"plank",null]], ingredienti: { plank: { q: 6, come: "1 tronco → 4 assi, servono 2 tronchi" }, iron_ingot: { q: 1, come: "Fondi 1 ferro grezzo nella fornace" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Per le assi" }, { id: "raw_iron", q: 1, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "iron_helmet", nome: "Elmo di ferro", categoria: "🛡 Armatura", griglia: [["iron_ingot","iron_ingot","iron_ingot"],["iron_ingot",null,"iron_ingot"],[null,null,null]], ingredienti: { iron_ingot: { q: 5, come: "Fondi 5 ferri grezzi nella fornace" } }, materieBase: [{ id: "raw_iron", q: 5, come: "⛏ Ferro sottoterra (profondità media, tra Y=16 e Y=72)" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "iron_chestplate", nome: "Corazza di ferro", categoria: "🛡 Armatura", griglia: [["iron_ingot",null,"iron_ingot"],["iron_ingot","iron_ingot","iron_ingot"],["iron_ingot","iron_ingot","iron_ingot"]], ingredienti: { iron_ingot: { q: 8, come: "Fondi 8 ferri grezzi — servono tanti!" } }, materieBase: [{ id: "raw_iron", q: 8, come: "⛏ Tanto ferro! Cerca grotte grandi" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "iron_leggings", nome: "Gambali di ferro", categoria: "🛡 Armatura", griglia: [["iron_ingot","iron_ingot","iron_ingot"],["iron_ingot",null,"iron_ingot"],["iron_ingot",null,"iron_ingot"]], ingredienti: { iron_ingot: { q: 7, come: "Fondi 7 ferri grezzi" } }, materieBase: [{ id: "raw_iron", q: 7, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "iron_boots", nome: "Stivali di ferro", categoria: "🛡 Armatura", griglia: [["iron_ingot",null,"iron_ingot"],["iron_ingot",null,"iron_ingot"],[null,null,null]], ingredienti: { iron_ingot: { q: 4, come: "Fondi 4 ferri grezzi" } }, materieBase: [{ id: "raw_iron", q: 4, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "diamond_helmet", nome: "Elmo di diamante", categoria: "🛡 Armatura", griglia: [["diamond","diamond","diamond"],["diamond",null,"diamond"],[null,null,null]], ingredienti: { diamond: { q: 5, come: "Scava in profondità fino a Y=-59 col piccone di ferro" } }, materieBase: [{ id: "diamond", q: 5, come: "💎 Profondità massima (Y da -64 a -59) — cerca nel deepslate!" }] },
+  { id: "diamond_chestplate", nome: "Corazza di diamante", categoria: "🛡 Armatura", griglia: [["diamond",null,"diamond"],["diamond","diamond","diamond"],["diamond","diamond","diamond"]], ingredienti: { diamond: { q: 8, come: "Servono tantissimi diamanti!" } }, materieBase: [{ id: "diamond", q: 8, come: "💎 Molto in profondità (Y=-59) — usa il branch mining (corridoi ogni 2 blocchi)" }] },
+  { id: "bed", nome: "Letto", categoria: "📦 Base", griglia: [["wool","wool","wool"],["plank","plank","plank"],[null,null,null]], ingredienti: { wool: { q: 3, come: "Tosare le pecore con le cesoie, oppure uccidile" }, plank: { q: 3, come: "1 tronco → 4 assi" } }, materieBase: [{ id: "wool", q: 3, come: "🐑 Trova 3 pecore! Tosale con le cesoie o... sigh" }, { id: "log", q: 1, come: "🪓 Per le assi" }] },
+  { id: "bucket", nome: "Secchio", categoria: "⛏ Strumenti", griglia: [["iron_ingot",null,"iron_ingot"],[null,"iron_ingot",null],[null,null,null]], ingredienti: { iron_ingot: { q: 3, come: "Fondi 3 ferri grezzi" } }, materieBase: [{ id: "raw_iron", q: 3, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "compass", nome: "Bussola", categoria: "⛏ Strumenti", griglia: [[null,"iron_ingot",null],["iron_ingot","redstone","iron_ingot"],[null,"iron_ingot",null]], ingredienti: { iron_ingot: { q: 4, come: "Fondi 4 ferri grezzi" }, redstone: { q: 1, come: "Mina i blocchi rossi in profondità — sotto il livello Y=16 (scava parecchio!)" } }, materieBase: [{ id: "raw_iron", q: 4, come: "⛏ Ferro sottoterra" }, { id: "redstone", q: 1, come: "🔴 Blocchi con puntini rossi, in profondità, devi scendere scava in profondità sotto il livello Y=16" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "enchanting_table", nome: "Tavolo degli incantesimi", categoria: "📦 Base", griglia: [[null,"book",null],["diamond","obsidian","diamond"],["obsidian","obsidian","obsidian"]], ingredienti: { book: { q: 1, come: "3 carte + 1 cuoio. La carta viene dalla canna da zucchero" }, diamond: { q: 2, come: "Scava molto in profondità fino a Y=-59" }, obsidian: { q: 4, come: "Versa acqua sulla lava ferma, poi mina con piccone di diamante" } }, materieBase: [{ id: "leather", q: 1, come: "🐄 Sconfiggi le mucche" }, { id: "sugar_cane", q: 3, come: "🌿 Cresce vicino all'acqua su sabbia e terra" }, { id: "diamond", q: 2, come: "💎 Profondità massima, Y=-59" }, { id: "obsidian", q: 4, come: "🟪 Versa acqua su lava ferma → diventa ossidiana → mina con piccone di DIAMANTE" }] },
+  { id: "anvil", nome: "Incudine", categoria: "📦 Base", griglia: [["iron_block","iron_block","iron_block"],[null,"iron_ingot",null],["iron_ingot","iron_ingot","iron_ingot"]], ingredienti: { iron_block: { q: 3, come: "1 blocco = 9 lingotti di ferro. Servono 27 lingotti solo per i blocchi!" }, iron_ingot: { q: 4, come: "Fondi il ferro grezzo" } }, materieBase: [{ id: "raw_iron", q: 31, come: "⛏ TANTISSIMO ferro! 31 lingotti = 31 ferri grezzi. Cerca grotte enormi!" }, { id: "coal", q: 4, come: "🔥 Tanto carbone per la fornace" }] },
+  { id: "bookshelf", nome: "Libreria", categoria: "📦 Base", griglia: [["plank","plank","plank"],["book","book","book"],["plank","plank","plank"]], ingredienti: { plank: { q: 6, come: "2 tronchi → 8 assi" }, book: { q: 3, come: "Ogni libro = 3 carte + 1 cuoio" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Per le assi" }, { id: "leather", q: 3, come: "🐄 Sconfiggi le mucche" }, { id: "sugar_cane", q: 9, come: "🌿 Tanta canna da zucchero! Cerca lungo i fiumi" }] },
+  { id: "lantern", nome: "Lanterna", categoria: "📦 Base", griglia: [["iron_nugget","iron_nugget","iron_nugget"],["iron_nugget","torch","iron_nugget"],["iron_nugget","iron_nugget","iron_nugget"]], ingredienti: { iron_nugget: { q: 8, come: "1 lingotto di ferro → 9 pepite" }, torch: { q: 1, come: "1 carbone + 1 bastone → 4 torce" } }, materieBase: [{ id: "raw_iron", q: 1, come: "⛏ Basta 1 ferro per 9 pepite" }, { id: "coal", q: 2, come: "🔥 Per la fornace e la torcia" }, { id: "log", q: 1, come: "🪓 Per il bastone della torcia" }] },
+  { id: "golden_apple", nome: "Mela d'oro", categoria: "🍎 Cibo", griglia: [["gold_ingot","gold_ingot","gold_ingot"],["gold_ingot","apple","gold_ingot"],["gold_ingot","gold_ingot","gold_ingot"]], ingredienti: { gold_ingot: { q: 8, come: "Fondi l'oro grezzo nella fornace" }, apple: { q: 1, come: "Rompi le foglie delle querce — a volte cade una mela!" } }, materieBase: [{ id: "raw_gold", q: 8, come: "✨ Oro sottoterra (Y -64 a 32). Più comune nel bioma Badlands (mesa)" }, { id: "apple", q: 1, come: "🍎 Rompi le foglie di quercia — 0.5% di probabilità, quindi taglia tante querce!" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "brewing_stand", nome: "Supporto per pozioni", categoria: "🧪 Pozioni", griglia: [[null,"blaze_rod",null],["cobblestone","cobblestone","cobblestone"],[null,null,null]], ingredienti: { blaze_rod: { q: 1, come: "Sconfiggi un Blaze nella Fortezza del Nether!" }, cobblestone: { q: 3, come: "Pietrisco — mina la pietra" } }, materieBase: [{ id: "blaze_rod", q: 1, come: "🔥 I Blaze si trovano nelle Fortezze del Nether — mob gialli che volano e sparano fuoco!" }, { id: "cobblestone", q: 3, come: "⛏ Pietra qualsiasi" }] },
+  { id: "tnt", nome: "TNT", categoria: "💥 Redstone", griglia: [["gunpowder","sand","gunpowder"],["sand","gunpowder","sand"],["gunpowder","sand","gunpowder"]], ingredienti: { gunpowder: { q: 5, come: "Sconfiggi i Creeper! Quelli verdi che esplodono..." }, sand: { q: 4, come: "Raccoglila sulle spiagge e nei deserti" } }, materieBase: [{ id: "gunpowder", q: 5, come: "💥 Uccidi i Creeper (quelli verdi) PRIMA che esplodano! Ogni Creeper dà 0-2 polveri" }, { id: "sand", q: 4, come: "🏖 Spiagge e deserti — scava la sabbia" }] },
+  { id: "hopper", nome: "Tramoggia", categoria: "💥 Redstone", griglia: [["iron_ingot",null,"iron_ingot"],["iron_ingot","chest","iron_ingot"],[null,"iron_ingot",null]], ingredienti: { iron_ingot: { q: 5, come: "Fondi 5 ferri grezzi" }, chest: { q: 1, come: "8 assi di legno in cerchio" } }, materieBase: [{ id: "raw_iron", q: 5, come: "⛏ Ferro sottoterra" }, { id: "log", q: 2, come: "🪓 Per il baule e il resto" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "boat", nome: "Barca", categoria: "🚂 Trasporto", griglia: [[null,null,null],["plank",null,"plank"],["plank","plank","plank"]], ingredienti: { plank: { q: 5, come: "2 tronchi → 8 assi" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Taglia 2 alberi" }] },
+  { id: "fishing_rod", nome: "Canna da pesca", categoria: "⛏ Strumenti", griglia: [[null,null,"stick"],[null,"stick","string"],["stick",null,"string"]], ingredienti: { stick: { q: 3, come: "2 assi → 4 bastoni" }, string: { q: 2, come: "Uccidi i ragni di notte!" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Per i bastoni" }, { id: "string", q: 2, come: "🕷 I ragni escono di notte e lasciano fili" }] },
+  { id: "shears", nome: "Cesoie", categoria: "⛏ Strumenti", griglia: [[null,"iron_ingot",null],["iron_ingot",null,null],[null,null,null]], ingredienti: { iron_ingot: { q: 2, come: "Fondi 2 ferri grezzi" } }, materieBase: [{ id: "raw_iron", q: 2, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "rail", nome: "Rotaia (x16)", categoria: "🚂 Trasporto", griglia: [["iron_ingot",null,"iron_ingot"],["iron_ingot","stick","iron_ingot"],["iron_ingot",null,"iron_ingot"]], ingredienti: { iron_ingot: { q: 6, come: "Fondi 6 ferri grezzi" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 6, come: "⛏ Tanto ferro!" }, { id: "log", q: 1, come: "🪓 Per il bastone" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "minecart", nome: "Carrello da miniera", categoria: "🚂 Trasporto", griglia: [[null,null,null],["iron_ingot",null,"iron_ingot"],["iron_ingot","iron_ingot","iron_ingot"]], ingredienti: { iron_ingot: { q: 5, come: "Fondi 5 ferri grezzi" } }, materieBase: [{ id: "raw_iron", q: 5, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "piston", nome: "Pistone", categoria: "💥 Redstone", griglia: [["plank","plank","plank"],["cobblestone","iron_ingot","cobblestone"],["cobblestone","redstone","cobblestone"]], ingredienti: { plank: { q: 3, come: "1 tronco → 4 assi" }, cobblestone: { q: 4, come: "Pietrisco" }, iron_ingot: { q: 1, come: "Fondi ferro grezzo" }, redstone: { q: 1, come: "Polvere rossa, scava in profondità sotto il livello Y=16" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Per le assi" }, { id: "cobblestone", q: 4, come: "⛏ Pietra" }, { id: "raw_iron", q: 1, come: "⛏ Ferro" }, { id: "redstone", q: 1, come: "🔴 Scava in profondità — devi scendere sotto il livello Y=16" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  // --- NUOVI OGGETTI PER LE QUEST ---
+  { id: "iron_axe", nome: "Ascia di ferro", categoria: "⛏ Strumenti", griglia: [["iron_ingot","iron_ingot",null],["iron_ingot","stick",null],[null,"stick",null]], ingredienti: { iron_ingot: { q: 3, come: "Fondi 3 ferri grezzi nella fornace" }, stick: { q: 2, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 3, come: "⛏ Ferro sottoterra (profondità media, tra Y=16 e Y=72)" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "iron_shovel", nome: "Pala di ferro", categoria: "⛏ Strumenti", griglia: [["iron_ingot",null,null],["stick",null,null],["stick",null,null]], ingredienti: { iron_ingot: { q: 1, come: "Fondi 1 ferro grezzo" }, stick: { q: 2, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 1, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "iron_hoe", nome: "Zappa di ferro", categoria: "⛏ Strumenti", griglia: [["iron_ingot","iron_ingot",null],[null,"stick",null],[null,"stick",null]], ingredienti: { iron_ingot: { q: 2, come: "Fondi 2 ferri grezzi" }, stick: { q: 2, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "raw_iron", q: 2, come: "⛏ Ferro sottoterra" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }, { id: "log", q: 1, come: "🪓 Per i bastoni" }] },
+  { id: "bread", nome: "Pane", categoria: "🍎 Cibo", griglia: [["wheat","wheat","wheat"],[null,null,null],[null,null,null]], ingredienti: { wheat: { q: 3, come: "Raccogli il grano maturo (giallo) dalla piantagione" } }, materieBase: [{ id: "wheat", q: 3, come: "🌾 Pianta semi di grano su terra arata vicino all'acqua — raccogli quando diventa giallo" }] },
+  { id: "glass_bottle", nome: "Bottiglia di vetro (x3)", categoria: "🧪 Pozioni", griglia: [["glass",null,"glass"],[null,"glass",null],[null,null,null]], ingredienti: { glass: { q: 3, come: "Fondi la sabbia nella fornace → Vetro" } }, materieBase: [{ id: "sand", q: 3, come: "🏖 Scava la sabbia in spiaggia o nel deserto" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "lead", nome: "Guinzaglio (x2)", categoria: "⛏ Strumenti", griglia: [["string","string",null],["string","slimeball",null],[null,null,"string"]], ingredienti: { string: { q: 4, come: "Uccidi i ragni di notte" }, slimeball: { q: 1, come: "Uccidi gli Slime nelle paludi o sottoterra" } }, materieBase: [{ id: "string", q: 4, come: "🕷 I ragni escono di notte e lasciano fili" }, { id: "slimeball", q: 1, come: "🟢 Gli Slime spawnano nelle paludi di notte o sotto il livello Y=40 in certi chunk" }] },
+  { id: "fence", nome: "Recinto (x3)", categoria: "📦 Base", griglia: [["plank","stick","plank"],["plank","stick","plank"],[null,null,null]], ingredienti: { plank: { q: 4, come: "1 tronco → 4 assi" }, stick: { q: 2, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Taglia 2 alberi" }] },
+  { id: "fence_gate", nome: "Cancello", categoria: "📦 Base", griglia: [["stick","plank","stick"],["stick","plank","stick"],[null,null,null]], ingredienti: { stick: { q: 4, come: "2 assi → 4 bastoni" }, plank: { q: 2, come: "1 tronco → 4 assi" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Per assi e bastoni" }] },
+  { id: "ladder", nome: "Scala a pioli (x3)", categoria: "📦 Base", griglia: [["stick",null,"stick"],["stick","stick","stick"],["stick",null,"stick"]], ingredienti: { stick: { q: 7, come: "2 assi → 4 bastoni, ne servono parecchi!" } }, materieBase: [{ id: "log", q: 1, come: "🪓 1 tronco → 4 assi → 8 bastoni" }] },
+  { id: "sign", nome: "Cartello (x3)", categoria: "📦 Base", griglia: [["plank","plank","plank"],["plank","plank","plank"],[null,"stick",null]], ingredienti: { plank: { q: 6, come: "2 tronchi → 8 assi" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Per assi e bastoni" }] },
+  { id: "campfire", nome: "Falò", categoria: "📦 Base", griglia: [[null,"stick",null],["stick","coal","stick"],["log","log","log"]], ingredienti: { stick: { q: 3, come: "2 assi → 4 bastoni" }, coal: { q: 1, come: "Carbone in grotte e montagne" }, log: { q: 3, come: "Tronchi qualsiasi" } }, materieBase: [{ id: "log", q: 4, come: "🪓 3 tronchi per la base + 1 per i bastoni" }, { id: "coal", q: 1, come: "⛏ Carbone in grotte" }] },
+  { id: "flint_and_steel", nome: "Acciarino", categoria: "⛏ Strumenti", griglia: [["iron_ingot",null,null],[null,"flint",null],[null,null,null]], ingredienti: { iron_ingot: { q: 1, come: "Fondi 1 ferro grezzo" }, flint: { q: 1, come: "Rompi la ghiaia — 10% di probabilità di ottenere selce" } }, materieBase: [{ id: "raw_iron", q: 1, come: "⛏ Ferro sottoterra" }, { id: "flint", q: 1, come: "🪨 Scava la ghiaia (blocchi grigi che cadono)" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "paper", nome: "Carta (x3)", categoria: "📦 Base", griglia: [["sugar_cane","sugar_cane","sugar_cane"],[null,null,null],[null,null,null]], ingredienti: { sugar_cane: { q: 3, come: "Cresce vicino all'acqua, su sabbia o terra" } }, materieBase: [{ id: "sugar_cane", q: 3, come: "🌿 Cerca lungo fiumi e laghi — pianta alta e verde" }] },
+  { id: "map", nome: "Mappa", categoria: "⛏ Strumenti", griglia: [["paper","paper","paper"],["paper","compass","paper"],["paper","paper","paper"]], ingredienti: { paper: { q: 8, come: "3 canne da zucchero → 3 carte, ne servono 8!" }, compass: { q: 1, come: "4 lingotti di ferro + 1 redstone" } }, materieBase: [{ id: "sugar_cane", q: 9, come: "🌿 Tanta canna da zucchero lungo i fiumi!" }, { id: "raw_iron", q: 4, come: "⛏ Per la bussola" }, { id: "redstone", q: 1, come: "🔴 Per la bussola, scava in profondità sotto il livello Y=16" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "eye_of_ender", nome: "Occhio di Ender", categoria: "⛏ Strumenti", griglia: [["blaze_powder",null,null],["ender_pearl",null,null],[null,null,null]], ingredienti: { blaze_powder: { q: 1, come: "1 Blaze Rod → 2 Blaze Powder" }, ender_pearl: { q: 1, come: "Uccidi gli Enderman!" } }, materieBase: [{ id: "blaze_rod", q: 1, come: "🔥 Sconfiggi i Blaze nelle Fortezze del Nether" }, { id: "ender_pearl", q: 1, come: "👁 Uccidi gli Enderman — alti 3 blocchi, neri, si teletrasportano" }] },
+  { id: "item_frame", nome: "Cornice", categoria: "📦 Base", griglia: [["stick","stick","stick"],["stick","leather","stick"],["stick","stick","stick"]], ingredienti: { stick: { q: 8, come: "2 assi → 4 bastoni, ne servono tanti!" }, leather: { q: 1, come: "Sconfiggi le mucche" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Per i bastoni" }, { id: "leather", q: 1, come: "🐄 Sconfiggi le mucche" }] },
+  { id: "wooden_door", nome: "Porta di legno", categoria: "📦 Base", griglia: [["plank","plank",null],["plank","plank",null],["plank","plank",null]], ingredienti: { plank: { q: 6, come: "2 tronchi → 8 assi" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Taglia 2 alberi" }] },
+  // --- NUOVI OGGETTI PER LE 30 QUEST ---
+  { id: "smoker", nome: "Affumicatore", categoria: "📦 Base", griglia: [[null,"log",null],["log","furnace","log"],[null,"log",null]], ingredienti: { log: { q: 4, come: "4 tronchi qualsiasi" }, furnace: { q: 1, come: "8 pietrisco in cerchio" } }, materieBase: [{ id: "log", q: 4, come: "🪓 4 tronchi di qualsiasi albero" }, { id: "cobblestone", q: 8, come: "⛏ Per la fornace" }] },
+  { id: "blast_furnace", nome: "Altoforno", categoria: "📦 Base", griglia: [["iron_ingot","iron_ingot","iron_ingot"],["iron_ingot","furnace","iron_ingot"],["smooth_stone","smooth_stone","smooth_stone"]], ingredienti: { iron_ingot: { q: 5, come: "Fondi 5 ferri grezzi" }, furnace: { q: 1, come: "8 pietrisco in cerchio" }, smooth_stone: { q: 3, come: "Cuoci il pietrisco nella fornace 2 volte: pietrisco → pietra → pietra liscia" } }, materieBase: [{ id: "raw_iron", q: 5, come: "⛏ Ferro sottoterra" }, { id: "cobblestone", q: 11, come: "⛏ 8 per la fornace + 3 da cuocere 2 volte per la pietra liscia" }, { id: "coal", q: 3, come: "🔥 Per le fornaci" }] },
+  { id: "bowl", nome: "Ciotola (x4)", categoria: "📦 Base", griglia: [["plank",null,"plank"],[null,"plank",null],[null,null,null]], ingredienti: { plank: { q: 3, come: "1 tronco → 4 assi" } }, materieBase: [{ id: "log", q: 1, come: "🪓 Taglia un albero" }] },
+  { id: "lightning_rod", nome: "Parafulmine", categoria: "📦 Base", griglia: [["copper_ingot",null,null],["copper_ingot",null,null],["copper_ingot",null,null]], ingredienti: { copper_ingot: { q: 3, come: "Fondi 3 rame grezzi nella fornace" } }, materieBase: [{ id: "raw_copper", q: 3, come: "🟤 Rame sottoterra (Y=0 a Y=96) — molto comune, blocchi con puntini arancioni" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "spyglass", nome: "Cannocchiale", categoria: "⛏ Strumenti", griglia: [["amethyst_shard",null,null],["copper_ingot",null,null],["copper_ingot",null,null]], ingredienti: { amethyst_shard: { q: 1, come: "Rompi i cristalli di ametista nei Geodi (grotte rotonde viola)" }, copper_ingot: { q: 2, come: "Fondi il rame grezzo nella fornace" } }, materieBase: [{ id: "amethyst_shard", q: 1, come: "💜 Cerca i Geodi di Ametista sottoterra — grotte rotonde con cristalli viola che brillano!" }, { id: "raw_copper", q: 2, come: "🟤 Rame sottoterra, molto comune" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "firework_rocket", nome: "Razzo (x3)", categoria: "⛏ Strumenti", griglia: [["paper",null,null],["gunpowder",null,null],[null,null,null]], ingredienti: { paper: { q: 1, come: "3 canne da zucchero → 3 carte" }, gunpowder: { q: 1, come: "Sconfiggi i Creeper!" } }, materieBase: [{ id: "sugar_cane", q: 1, come: "🌿 Canna da zucchero lungo i fiumi" }, { id: "gunpowder", q: 1, come: "💥 Uccidi i Creeper prima che esplodano" }] },
+  { id: "banner", nome: "Stendardo", categoria: "📦 Base", griglia: [["wool","wool","wool"],["wool","wool","wool"],[null,"stick",null]], ingredienti: { wool: { q: 6, come: "Tosa le pecore — servono 6 lane dello stesso colore!" }, stick: { q: 1, come: "2 assi → 4 bastoni" } }, materieBase: [{ id: "wool", q: 6, come: "🐑 Tosa 6 pecore dello stesso colore, o tingile prima!" }, { id: "log", q: 1, come: "🪓 Per il bastone" }] },
+  { id: "stonecutter", nome: "Taglia-pietra", categoria: "📦 Base", griglia: [[null,"iron_ingot",null],["cobblestone","cobblestone","cobblestone"],[null,null,null]], ingredienti: { iron_ingot: { q: 1, come: "Fondi 1 ferro grezzo" }, cobblestone: { q: 3, come: "Mina la pietra" } }, materieBase: [{ id: "raw_iron", q: 1, come: "⛏ Ferro sottoterra" }, { id: "cobblestone", q: 3, come: "⛏ Pietra qualsiasi" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "conduit", nome: "Conduit", categoria: "📦 Base", griglia: [["nautilus_shell","nautilus_shell","nautilus_shell"],["nautilus_shell","heart_of_the_sea","nautilus_shell"],["nautilus_shell","nautilus_shell","nautilus_shell"]], ingredienti: { nautilus_shell: { q: 8, come: "Droppano dai Drowned (zombie acquatici) o si comprano dal Wandering Trader" }, heart_of_the_sea: { q: 1, come: "Si trova SOLO nei tesori sepolti — segui le mappe del tesoro!" } }, materieBase: [{ id: "nautilus_shell", q: 8, come: "🐚 Uccidi i Drowned che tengono in mano una conchiglia, o compra dal mercante ambulante" }, { id: "heart_of_the_sea", q: 1, come: "💙 Trova una mappa del tesoro in un relitto → scava sulla X → il forziere contiene il Cuore del Mare" }] },
+  { id: "iron_door", nome: "Porta di ferro", categoria: "📦 Base", griglia: [["iron_ingot","iron_ingot",null],["iron_ingot","iron_ingot",null],["iron_ingot","iron_ingot",null]], ingredienti: { iron_ingot: { q: 6, come: "Fondi 6 ferri grezzi nella fornace" } }, materieBase: [{ id: "raw_iron", q: 6, come: "⛏ Ferro sottoterra (profondità media)" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "jukebox", nome: "Jukebox", categoria: "📦 Base", griglia: [["plank","plank","plank"],["plank","diamond","plank"],["plank","plank","plank"]], ingredienti: { plank: { q: 8, come: "2 tronchi → 8 assi" }, diamond: { q: 1, come: "Scava molto in profondità (Y=-59)" } }, materieBase: [{ id: "log", q: 2, come: "🪓 Taglia 2 alberi" }, { id: "diamond", q: 1, come: "💎 Scava fino a Y=-59 con piccone di ferro" }] },
+  { id: "smithing_table", nome: "Tavolo da Smithing", categoria: "📦 Base", griglia: [["iron_ingot","iron_ingot",null],["plank","plank",null],["plank","plank",null]], ingredienti: { iron_ingot: { q: 2, come: "Fondi 2 ferri grezzi" }, plank: { q: 4, come: "1 tronco → 4 assi" } }, materieBase: [{ id: "raw_iron", q: 2, come: "⛏ Ferro sottoterra" }, { id: "log", q: 1, come: "🪓 Per le assi" }, { id: "coal", q: 1, come: "🔥 Per la fornace" }] },
+  { id: "shulker_box", nome: "Shulker Box", categoria: "📦 Base", griglia: [["shulker_shell",null,null],["chest",null,null],["shulker_shell",null,null]], ingredienti: { shulker_shell: { q: 2, come: "Sconfiggi gli Shulker nelle End City — mob viola che sparano proiettili di levitazione" }, chest: { q: 1, come: "8 assi di legno in cerchio" } }, materieBase: [{ id: "shulker_shell", q: 2, come: "🟪 Gli Shulker si trovano SOLO nelle End City — sono attaccati ai blocchi e sparano proiettili!" }, { id: "log", q: 2, come: "🪓 Per il baule" }] },
+  { id: "glass", nome: "Vetro", categoria: "📦 Base", griglia: [[null,"sand",null],[null,"furnace",null],[null,null,null]], ingredienti: { sand: { q: 1, come: "Scava la sabbia sulle spiagge o nei deserti" }, furnace: { q: 1, come: "Cuoci nella fornace! (non serve craftarla ogni volta)" } }, materieBase: [{ id: "sand", q: 1, come: "🏖 Sabbia dalle spiagge o dal deserto" }, { id: "coal", q: 1, come: "🔥 Carbone come combustibile per la fornace" }] },
+];
+
+const ITEM_NAMES = {
+  plank: "Assi", stick: "Bastone", cobblestone: "Pietrisco", iron_ingot: "Lingotto di ferro",
+  diamond: "Diamante", coal: "Carbone", log: "Tronco", raw_iron: "Ferro grezzo", string: "Filo",
+  feather: "Piuma", flint: "Selce", wool: "Lana", redstone: "Redstone", gold_ingot: "Lingotto d'oro",
+  raw_gold: "Oro grezzo", paper: "Carta", compass: "Bussola", sugar_cane: "Canna da zucchero",
+  book: "Libro", obsidian: "Ossidiana", leather: "Cuoio", iron_nugget: "Pepita di ferro",
+  torch: "Torcia", chest: "Baule", sand: "Sabbia", gunpowder: "Polvere da sparo", glass: "Vetro",
+  blaze_rod: "Barra di blaze", iron_block: "Blocco di ferro", milk: "Secchio di latte", sugar: "Zucchero",
+  egg: "Uovo", wheat: "Grano", apple: "Mela",
+  slimeball: "Palla di slime", ender_pearl: "Perla di Ender", blaze_powder: "Polvere di Blaze",
+  sugar_cane: "Canna da zucchero", glass: "Vetro", leather: "Cuoio",
+  copper_ingot: "Lingotto di rame", raw_copper: "Rame grezzo", amethyst_shard: "Frammento di ametista",
+  smooth_stone: "Pietra liscia", nautilus_shell: "Conchiglia di Nautilus", heart_of_the_sea: "Cuore del Mare",
+  furnace: "Fornace", shulker_shell: "Guscio di Shulker",
+};
+
+const ITEM_COLORS = {
+  plank: "#C4A46C", stick: "#8B6914", cobblestone: "#7F7F7F", iron_ingot: "#D4D4D4",
+  diamond: "#4AEDD9", coal: "#2C2C2C", string: "#E8E8E8", feather: "#F0F0F0",
+  flint: "#505050", wool: "#F0E6D0", redstone: "#CC0000", gold_ingot: "#FFD700",
+  paper: "#F5F5DC", compass: "#C0C0C0", book: "#8B4513", obsidian: "#1A1A2E",
+  iron_nugget: "#C0C0C0", torch: "#FFA500", chest: "#8B6B4A", sand: "#E8D5A3",
+  gunpowder: "#505050", glass: "#ADD8E6", blaze_rod: "#FF8C00", iron_block: "#D4D4D4",
+  milk: "#FAFAFA", sugar: "#F5F5F5", egg: "#F5E6C8", wheat: "#DAA520", apple: "#CC3333",
+  slimeball: "#7CFC00", ender_pearl: "#0D5E4E", blaze_powder: "#FF8C00", leather: "#8B4513",
+  sugar_cane: "#5D8C3E", log: "#6B4226",
+  copper_ingot: "#B87333", raw_copper: "#B87333", amethyst_shard: "#9966CC",
+  smooth_stone: "#A0A0A0", nautilus_shell: "#DEB887", heart_of_the_sea: "#1E90FF",
+  furnace: "#7F7F7F", shulker_shell: "#9370DB",
+};
+
+// Mappa nomi materiali italiani -> ID nel database crafting
+const MATERIAL_CRAFT_MAP = {
+  "piccone di legno": "wooden_pickaxe", "piccone di pietra": "stone_pickaxe",
+  "piccone di ferro": "iron_pickaxe", "piccone di diamante": "diamond_pickaxe",
+  "spada di ferro": "iron_sword", "spada di diamante": "diamond_sword",
+  "spada di legno": "wooden_sword", "arco": "bow", "frecce": "arrow",
+  "scudo": "shield", "barca": "boat", "torce": "torch", "torcia": "torch",
+  "forziere": "chest", "forzieri": "chest", "letto": "bed",
+  "fornace": "furnace", "tavolo da lavoro": "crafting_table",
+  "tavolo da cartografia": "crafting_table", "bussola": "compass",
+  "secchio": "bucket", "secchio d'acqua": "bucket", "secchi d'acqua": "bucket",
+  "secchio di lava": "bucket", "canna da pesca": "fishing_rod",
+  "tavolo degli incantesimi": "enchanting_table", "incudine": "anvil",
+  "librerie": "bookshelf", "libreria": "bookshelf",
+  "lanterne": "lantern", "lanterna": "lantern", "lanterne marine": "lantern",
+  "tramogge": "hopper", "tramoggia": "hopper",
+  "rotaie": "rail", "minecart": "minecart",
+  "cesoie": "shears", "tnt": "tnt",
+  "mela dorata": "golden_apple", "mele dorate": "golden_apple",
+  "armatura di ferro": "iron_chestplate", "armatura di ferro completa": "iron_chestplate",
+  "armatura di diamante": "diamond_chestplate", "armatura completa": "iron_chestplate",
+  "elmo di ferro": "iron_helmet", "stivali di ferro": "iron_boots",
+  "alambicco": "brewing_stand",
+  "ascia di ferro": "iron_axe", "pala di ferro": "iron_shovel", "pala": "iron_shovel",
+  "zappa di ferro": "iron_hoe", "zappa": "iron_hoe",
+  "pane": "bread", "bottiglie di vetro": "glass_bottle", "bottiglia di vetro": "glass_bottle",
+  "guinzaglio": "lead", "recinti": "fence", "recinto": "fence",
+  "cancelli": "fence_gate", "cancello": "fence_gate",
+  "scale a pioli": "ladder", "scala a pioli": "ladder",
+  "cartelli": "sign", "cartello": "sign",
+  "falò": "campfire", "acciarino": "flint_and_steel",
+  "mappa": "map", "mappa vuota": "map", "carta": "paper",
+  "occhi di ender": "eye_of_ender", "occhio di ender": "eye_of_ender",
+  "cornici": "item_frame", "cornice": "item_frame",
+  "porta di legno": "wooden_door", "porta": "wooden_door",
+  "pistone": "piston", "pistoni": "piston", "pistoni appiccicosi": "piston",
+  "affumicatore": "smoker", "altoforno": "blast_furnace",
+  "ciotola": "bowl", "ciotole": "bowl",
+  "parafulmine": "lightning_rod", "cannocchiale": "spyglass",
+  "razzo": "firework_rocket", "razzi": "firework_rocket",
+  "stendardo": "banner", "stendardi": "banner",
+  "taglia-pietra": "stonecutter", "taglia pietra": "stonecutter",
+  "conduit": "conduit",
+  "carrello da miniera": "minecart", "carrello": "minecart",
+  "porta di ferro": "iron_door", "porte di ferro": "iron_door",
+  "jukebox": "jukebox",
+  "tavolo da smithing": "smithing_table", "smithing table": "smithing_table",
+  "shulker box": "shulker_box", "shulker": "shulker_box",
+  "vetro": "glass", "blocchi di vetro": "glass",
+};
+
+// Funzione per cercare un materiale nel database crafting
+function findCraftMatch(materialText) {
+  // Rimuovi quantità tipo "x20", "x64" ecc.
+  const cleaned = materialText.replace(/\s*x\d+\s*/gi, "").replace(/\s*\(.*?\)\s*/g, "").trim().toLowerCase();
+  // Cerca nella mappa italiana
+  if (MATERIAL_CRAFT_MAP[cleaned]) return MATERIAL_CRAFT_MAP[cleaned];
+  // Cerca parziale nella mappa
+  for (const [key, val] of Object.entries(MATERIAL_CRAFT_MAP)) {
+    if (cleaned.includes(key) || key.includes(cleaned)) return val;
+  }
+  // Cerca direttamente nel DB crafting per nome inglese
+  const directMatch = CRAFTING_DB.find(i => i.nome.toLowerCase() === cleaned);
+  if (directMatch) return directMatch.id;
+  // Cerca parziale nel DB
+  const partialMatch = CRAFTING_DB.find(i => cleaned.includes(i.nome.toLowerCase()) || i.nome.toLowerCase().includes(cleaned));
+  if (partialMatch) return partialMatch.id;
+  return null;
+}
+
+const pf = "'Silkscreen', 'Courier New', monospace";
+
+// ============================================================
+// COMPONENTI
+// ============================================================
+
+function FilterSelect({ label, value, options, onChange }) {
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:4}}>
+      <label style={{fontSize:9,color:"#87CEEB",textTransform:"uppercase",fontFamily:pf}}>{label}</label>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{fontFamily:pf,fontSize:11,padding:"8px 6px",background:"#2a2a3e",color:"#E0E0E0",border:"2px solid #444",outline:"none"}}> 
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function QuestCard({ quest, preferita, completata, onPreferita, onCompleta, onGoToCrafting, showActions=true }) {
+  const q = quest;
+  return (
+    <div style={{background:"#252540",border:"3px solid "+(completata?"#5D8C3E":preferita?"#FFD700":"#444"),padding:14,opacity:completata?0.7:1,transition:"all .2s"}}>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+        <span style={{fontSize:9,padding:"3px 8px",color:"#fff",fontFamily:pf,backgroundColor:DIFF_COLORS[q.difficolta]}}>{q.difficolta}</span>
+        <span style={{fontSize:9,padding:"3px 8px",background:"#1A1A2E",color:"#87CEEB",border:"1px solid #87CEEB",fontFamily:pf}}>{q.categoria}</span>
+        <span style={{fontSize:9,padding:"3px 8px",background:"#1A1A2E",color:"#aaa",fontFamily:pf}}>⏱ {q.durata} min</span>
+        <span style={{fontSize:9,padding:"3px 8px",background:"#1A1A2E",color:"#b8a9c9",border:"1px solid #8E44AD44",fontFamily:pf}}>📊 {q.livello}</span>
+      </div>
+      <h3 style={{fontSize:14,color:"#FFD700",marginBottom:6,fontFamily:pf}}>{q.titolo}</h3>
+      <p style={{fontSize:11,lineHeight:1.6,color:"#ccc",marginBottom:10}}>{q.descrizione}</p>
+      <div style={{fontSize:10,lineHeight:1.8,color:"#aaa",marginBottom:10}}>
+        <div><strong>🎒 Materiali:</strong>{" "}
+          {q.materiali.map((mat, i) => {
+            const craftId = findCraftMatch(mat);
+            const sep = i < q.materiali.length - 1 ? ", " : "";
+            if (craftId) {
+              return <span key={i}><button onClick={() => onGoToCrafting(craftId)} style={{fontFamily:pf,fontSize:10,color:"#4AEDD9",background:"none",border:"none",borderBottom:"1px dashed #4AEDD955",cursor:"pointer",padding:0}}>{mat}</button>{sep}</span>;
+            }
+            return <span key={i}>{mat}{sep}</span>;
+          })}
+        </div>
+        <div><strong>🏅 Ricompensa:</strong> {q.ricompensa}</div>
+      </div>
+      {showActions && <div style={{display:"flex",gap:8}}>
+        <button onClick={onPreferita} style={{fontFamily:pf,fontSize:10,padding:"8px 12px",background:preferita?"#2e2a1a":"#1A1A2E",color:preferita?"#FFD700":"#aaa",border:"2px solid "+(preferita?"#FFD700":"#444"),cursor:"pointer"}}>
+          {preferita ? "⭐ Preferita" : "☆ Preferiti"}
+        </button>
+        <button onClick={onCompleta} style={{fontFamily:pf,fontSize:10,padding:"8px 12px",background:completata?"#1a2e1a":"#1A1A2E",color:completata?"#5D8C3E":"#aaa",border:"2px solid "+(completata?"#5D8C3E":"#444"),cursor:"pointer"}}>
+          {completata ? "✅ Completata!" : "☐ Completa"}
+        </button>
+      </div>}
+    </div>
+  );
+}
+
+function QuestSection({ onGoToCrafting }) {
+  const [sottoSezione, setSottoSezione] = useState("genera"); // genera | preferiti | completate
+  const [categoria, setCategoria] = useState("Tutte");
+  const [difficolta, setDifficolta] = useState("Tutte");
+  const [durata, setDurata] = useState(0);
+  const [livello, setLivello] = useState("Tutti");
+  const [numQuest, setNumQuest] = useState(3);
+  const [quests, setQuests] = useState([]);
+  const [preferite, setPreferite] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("mc_preferite") || "{}"); } catch(e) { return {}; }
+  });
+  const [completate, setCompletate] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("mc_completate") || "{}"); } catch(e) { return {}; }
+  });
+  const [totaleCompletate, setTotaleCompletate] = useState(() => {
+    try { return parseInt(localStorage.getItem("mc_total") || "0"); } catch(e) { return 0; }
+  });
+
+  const genera = () => {
+    let pool = QUEST_DATABASE.filter(q => {
+      if (categoria !== "Tutte" && q.categoria !== categoria) return false;
+      if (difficolta !== "Tutte" && q.difficolta !== difficolta) return false;
+      if (durata > 0 && q.durata !== durata) return false;
+      if (livello !== "Tutti" && q.livello !== livello) return false;
+      return true;
+    });
+    const nuove = [];
+    const prefIds = Object.keys(preferite).filter(k => preferite[k]).map(Number);
+    for (let i = 0; i < numQuest; i++) {
+      if (quests[i] && prefIds.includes(quests[i].id)) {
+        nuove.push(quests[i]);
+      } else {
+        const disponibili = pool.filter(q => !nuove.find(n => n.id === q.id) && !prefIds.includes(q.id));
+        if (disponibili.length > 0) {
+          nuove.push(disponibili[Math.floor(Math.random() * disponibili.length)]);
+        }
+      }
+    }
+    setQuests(nuove);
+  };
+
+  const togglePreferita = (id) => {
+    setPreferite(p => {
+      const nuovo = {...p, [id]: !p[id]};
+      try { localStorage.setItem("mc_preferite", JSON.stringify(nuovo)); } catch(e) {}
+      return nuovo;
+    });
+  };
+  const toggleCompleta = (id) => {
+    setCompletate(c => {
+      const nuovo = {...c, [id]: !c[id]};
+      try { localStorage.setItem("mc_completate", JSON.stringify(nuovo)); } catch(e) {}
+      if (!c[id]) {
+        const t = totaleCompletate + 1;
+        setTotaleCompletate(t);
+        try { localStorage.setItem("mc_total", t.toString()); } catch(e) {}
+      }
+      return nuovo;
+    });
+  };
+
+  // Liste per le sotto-sezioni
+  const questPreferite = QUEST_DATABASE.filter(q => preferite[q.id]);
+  const questCompletate = QUEST_DATABASE.filter(q => completate[q.id]);
+  const numPref = questPreferite.length;
+  const numComp = questCompletate.length;
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:"#FFD700",textAlign:"center",padding:"8px 0",marginBottom:8,fontFamily:pf}}>
+        🏆 Quest completate: <strong>{totaleCompletate}</strong>
+      </div>
+      {/* --- TAB NAVIGAZIONE --- */}
+      <div style={{display:"flex",gap:4,marginBottom:12,justifyContent:"center"}}>
+        {[
+          { key:"genera", label:"⚔ Genera", count:null },
+          { key:"preferiti", label:"⭐ Preferiti", count:numPref },
+          { key:"completate", label:"✅ Completate", count:numComp },
+        ].map(tab => (
+          <button key={tab.key} onClick={() => setSottoSezione(tab.key)}
+            style={{fontFamily:pf,fontSize:"clamp(9px, 2.5vw, 11px)",padding:"8px 14px",
+              background:sottoSezione===tab.key?"#5D8C3E":"#1A1A2E",
+              color:sottoSezione===tab.key?"#fff":"#aaa",
+              border:"2px solid "+(sottoSezione===tab.key?"#5D8C3E":"#444"),cursor:"pointer"}}>
+            {tab.label}{tab.count !== null ? ` (${tab.count})` : ""}
+          </button>
+        ))}
+      </div>
+
+      {/* === TAB: GENERA === */}
+      {sottoSezione === "genera" && <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:8,marginBottom:12}}>
+          <FilterSelect label="Categoria" value={categoria} options={CATEGORIE} onChange={setCategoria} />
+          <FilterSelect label="Difficoltà" value={difficolta} options={DIFFICOLTA} onChange={setDifficolta} />
+          <FilterSelect label="Durata" value={durata} options={DURATE.map(d=>d.label)} onChange={v => setDurata(DURATE.find(d=>d.label===v)?.value||0)} />
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <label style={{fontSize:9,color:"#87CEEB",textTransform:"uppercase",fontFamily:pf}}>Fase di gioco</label>
+            <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+              {LIVELLI.map(l => (
+                <button key={l} onClick={() => setLivello(l)}
+                  style={{fontFamily:pf,fontSize:9,padding:"6px 8px",background:livello===l?"#8E44AD":"#2a2a3e",color:livello===l?"#fff":"#aaa",border:"2px solid "+(livello===l?"#8E44AD":"#444"),cursor:"pointer"}}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <label style={{fontSize:9,color:"#87CEEB",textTransform:"uppercase",fontFamily:pf}}>Num. Quest</label>
+            <div style={{display:"flex",gap:4}}>
+              {NUM_QUEST.map(n => (
+                <button key={n} onClick={() => setNumQuest(n)}
+                  style={{fontFamily:pf,fontSize:11,padding:"8px 14px",background:numQuest===n?"#5D8C3E":"#2a2a3e",color:numQuest===n?"#fff":"#aaa",border:"2px solid "+(numQuest===n?"#5D8C3E":"#444"),cursor:"pointer"}}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button onClick={genera} style={{fontFamily:pf,fontSize:14,width:"100%",padding:14,background:"linear-gradient(180deg, #5D8C3E, #4a7030)",color:"#fff",border:"3px solid #7ab356",cursor:"pointer",marginBottom:16,textShadow:"1px 1px 0 #000"}}>
+          ⚔ Genera Quest!
+        </button>
+        {quests.length > 0 && (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {quests.map((q,i) => (
+              <QuestCard key={q.id+"-"+i} quest={q} preferita={!!preferite[q.id]} completata={!!completate[q.id]}
+                onPreferita={() => togglePreferita(q.id)} onCompleta={() => toggleCompleta(q.id)} onGoToCrafting={onGoToCrafting} />
+            ))}
+          </div>
+        )}
+        {quests.length === 0 && (
+          <div style={{textAlign:"center",padding:"40px 20px"}}>
+            <p style={{fontSize:12,color:"#888"}}>Premi "Genera Quest!" per ricevere le tue missioni, avventuriero!</p>
+          </div>
+        )}
+      </>}
+
+      {/* === TAB: PREFERITI === */}
+      {sottoSezione === "preferiti" && (
+        <div>
+          {questPreferite.length === 0 ? (
+            <div style={{textAlign:"center",padding:"40px 20px"}}>
+              <p style={{fontSize:28,marginBottom:8}}>⭐</p>
+              <p style={{fontSize:12,color:"#888",fontFamily:pf}}>Nessuna quest nei preferiti!</p>
+              <p style={{fontSize:10,color:"#666",fontFamily:pf,marginTop:4}}>Genera delle quest e premi ☆ per salvarle qui</p>
+            </div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <p style={{fontSize:10,color:"#888",textAlign:"center",fontFamily:pf}}>Le tue quest preferite — salvate anche se chiudi il sito!</p>
+              {questPreferite.map(q => (
+                <QuestCard key={q.id} quest={q} preferita={true} completata={!!completate[q.id]}
+                  onPreferita={() => togglePreferita(q.id)} onCompleta={() => toggleCompleta(q.id)} onGoToCrafting={onGoToCrafting} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* === TAB: COMPLETATE === */}
+      {sottoSezione === "completate" && (
+        <div>
+          {questCompletate.length === 0 ? (
+            <div style={{textAlign:"center",padding:"40px 20px"}}>
+              <p style={{fontSize:28,marginBottom:8}}>✅</p>
+              <p style={{fontSize:12,color:"#888",fontFamily:pf}}>Nessuna quest completata!</p>
+              <p style={{fontSize:10,color:"#666",fontFamily:pf,marginTop:4}}>Completa le quest e le troverai qui come trofei</p>
+            </div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <p style={{fontSize:10,color:"#888",textAlign:"center",fontFamily:pf}}>
+                🏆 Hai completato {questCompletate.length} quest su {QUEST_DATABASE.length} totali!
+              </p>
+              <div style={{background:"#1A1A2E",border:"2px solid #5D8C3E",padding:12,marginBottom:8}}>
+                <div style={{height:12,background:"#333",borderRadius:2,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:(questCompletate.length/QUEST_DATABASE.length*100)+"%",background:"linear-gradient(90deg, #5D8C3E, #7ab356)",transition:"width 0.5s"}} />
+                </div>
+                <p style={{fontSize:9,color:"#5D8C3E",textAlign:"center",marginTop:4,fontFamily:pf}}>
+                  {Math.round(questCompletate.length/QUEST_DATABASE.length*100)}% completato
+                </p>
+              </div>
+              {questCompletate.map(q => (
+                <QuestCard key={q.id} quest={q} preferita={!!preferite[q.id]} completata={true}
+                  onPreferita={() => togglePreferita(q.id)} onCompleta={() => toggleCompleta(q.id)} onGoToCrafting={onGoToCrafting} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CraftingDetail({ item, onSelect }) {
+  return (
+    <div style={{background:"#252540",border:"3px solid #444",padding:16,borderRadius:0}}>
+      {/* TITOLO con categoria */}
+      <div style={{textAlign:"center",marginBottom:20}}>
+        <span style={{fontSize:10,color:"#87CEEB",fontFamily:pf}}>{item.categoria}</span>
+        <h2 style={{fontSize:"clamp(14px, 4vw, 20px)",color:"#FFD700",marginTop:4,fontFamily:pf}}>{item.nome}</h2>
+      </div>
+
+      {/* GRIGLIA 3x3 — più grande e chiara */}
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{fontSize:10,color:"#87CEEB",marginBottom:8,fontFamily:pf}}>📋 Metti questi nella griglia di crafting:</div>
+        <div style={{display:"inline-grid",gridTemplateColumns:"repeat(3, 68px)",gridTemplateRows:"repeat(3, 68px)",gap:3,background:"#1a1a2e",padding:10,border:"4px solid #8B6B4A",boxShadow:"inset 0 0 20px #00000066"}}>
+          {(item.griglia.length === 2 ? [...item.griglia, [null,null,null]] : item.griglia).map((row, r) =>
+            row.map((cell, c) => (
+              <div key={r+"-"+c} style={{display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",
+                backgroundColor:cell?(ITEM_COLORS[cell]||"#888"):"#333",border:cell?"3px solid #66666688":"2px solid #222",
+                boxShadow:cell?"inset 0 -2px 4px #00000044":"none",transition:"all .2s"}}>
+                {cell && <span style={{fontSize:8,color:"#fff",textShadow:"1px 1px 2px #000",textAlign:"center",lineHeight:1.2,fontFamily:pf,padding:2}}>
+                  {ITEM_NAMES[cell]||cell}
+                </span>}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* INGREDIENTI con spiegazioni */}
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:12,color:"#FFD700",marginBottom:10,fontFamily:pf,borderBottom:"2px solid #FFD70033",paddingBottom:6}}>📦 Cosa ti serve:</div>
+        {Object.entries(item.ingredienti).map(([k, info]) => {
+          const craftable = CRAFTING_DB.find(i => i.id === k);
+          return (
+            <div key={k} style={{background:"#1a1a2e",border:"2px solid #333",padding:10,marginBottom:6}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <div style={{width:24,height:24,backgroundColor:ITEM_COLORS[k]||"#888",border:"2px solid #555",flexShrink:0,boxShadow:"inset 0 -2px 3px #00000044"}} />
+                <span style={{fontSize:12,color:"#fff",fontFamily:pf,fontWeight:"bold"}}>
+                  {ITEM_NAMES[k]||k} × {info.q}
+                </span>
+                {craftable && (
+                  <button onClick={() => onSelect(k)} style={{fontFamily:pf,fontSize:9,color:"#4AEDD9",background:"#4AEDD911",border:"1px solid #4AEDD944",padding:"3px 8px",cursor:"pointer",marginLeft:"auto"}}>
+                    📖 Ricetta
+                  </button>
+                )}
+              </div>
+              <div style={{fontSize:10,color:"#aaa",lineHeight:1.6,paddingLeft:32}}>{info.come}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* MATERIE PRIME — la lista della spesa partendo da zero */}
+      <div>
+        <div style={{fontSize:12,color:"#5D8C3E",marginBottom:10,fontFamily:pf,borderBottom:"2px solid #5D8C3E33",paddingBottom:6}}>🎒 Lista della spesa (partendo da zero):</div>
+        {item.materieBase.map((mat, i) => (
+          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:8,padding:"8px 10px",background:i%2===0?"#1a1a2e":"#1f1f35",border:"1px solid #333"}}>
+            <div style={{width:20,height:20,backgroundColor:ITEM_COLORS[mat.id]||"#888",border:"2px solid #555",flexShrink:0,marginTop:2,boxShadow:"inset 0 -2px 3px #00000044"}} />
+            <div>
+              <span style={{fontSize:11,color:"#fff",fontFamily:pf}}>{ITEM_NAMES[mat.id]||mat.id} × {mat.q}</span>
+              <div style={{fontSize:10,color:"#9ae69a",lineHeight:1.5,marginTop:2}}>{mat.come}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CraftingSection({ initialCraftId, onCraftIdConsumed }) {
+  const [ricerca, setRicerca] = useState("");
+  const [selezionato, setSelezionato] = useState(null);
+
+  // Quando arriva un initialCraftId dall'esterno, mostra subito quell'oggetto
+  React.useEffect(() => {
+    if (initialCraftId) {
+      const found = CRAFTING_DB.find(i => i.id === initialCraftId);
+      if (found) {
+        setSelezionato(found);
+        setRicerca(found.nome);
+      }
+      if (onCraftIdConsumed) onCraftIdConsumed();
+    }
+  }, [initialCraftId]);
+
+  const risultati = ricerca.length > 0 ? CRAFTING_DB.filter(item => item.nome.toLowerCase().includes(ricerca.toLowerCase())) : [];
+
+  return (
+    <div>
+      <div style={{marginBottom:12}}>
+        <input type="text" placeholder="🔍 Cerca un oggetto... (es. Piccone di diamante)"
+          value={ricerca} onChange={e => { setRicerca(e.target.value); setSelezionato(null); }}
+          style={{fontFamily:pf,fontSize:12,width:"100%",padding:12,background:"#2a2a3e",color:"#E0E0E0",border:"3px solid #444",outline:"none"}} />
+      </div>
+      {ricerca.length > 0 && !selezionato && (
+        <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:12,maxHeight:200,overflowY:"auto"}}>
+          {risultati.length === 0 && <p style={{fontSize:12,color:"#888"}}>Nessun oggetto trovato</p>}
+          {risultati.map(item => (
+            <button key={item.id} onClick={() => { setSelezionato(item); setRicerca(item.nome); }}
+              style={{fontFamily:pf,fontSize:11,padding:"10px 12px",background:"#252540",border:"2px solid #333",color:"#E0E0E0",cursor:"pointer",textAlign:"left",display:"block",width:"100%"}}>
+              {item.nome} <span style={{fontSize:9,color:"#888"}}>({item.categoria})</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {selezionato && <CraftingDetail item={selezionato} onSelect={id => {
+        const found = CRAFTING_DB.find(i => i.id === id);
+        if (found) { setSelezionato(found); setRicerca(found.nome); }
+      }} />}
+      {!ricerca && !selezionato && (
+        <div style={{padding:"20px 0"}}>
+          <p style={{fontSize:12,color:"#888",textAlign:"center"}}>Cerca un oggetto o scegline uno dalla lista!</p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",marginTop:12}}>
+            {["Piccone di diamante","Tavolo degli incantesimi","Scudo","Mela d'oro","Corazza di ferro","Arco","Letto","Acciarino","Mappa","Pane","Occhio di Ender","Falò","Zappa di ferro","Recinto"].map(name => (
+              <button key={name} onClick={() => {
+                const item = CRAFTING_DB.find(i => i.nome === name);
+                if (item) { setSelezionato(item); setRicerca(item.nome); }
+              }} style={{fontFamily:pf,fontSize:9,padding:"8px 12px",background:"#252540",color:"#87CEEB",border:"2px solid rgba(135,206,235,0.27)",cursor:"pointer"}}>{name}</button>
+            ))}
+          </div>
+          {/* --- CATALOGO ALFABETICO --- */}
+          <div style={{marginTop:24,borderTop:"2px solid #333",paddingTop:16}}>
+            <h3 style={{fontFamily:pf,fontSize:12,color:"#FFD700",textAlign:"center",marginBottom:12}}>📦 Tutti gli oggetti ({CRAFTING_DB.length})</h3>
+            {(() => {
+              const sorted = [...CRAFTING_DB].sort((a, b) => a.nome.localeCompare(b.nome, "it"));
+              const categorie = {};
+              sorted.forEach(item => {
+                const cat = item.categoria;
+                if (!categorie[cat]) categorie[cat] = [];
+                categorie[cat].push(item);
+              });
+              return Object.entries(categorie).sort((a,b) => a[0].localeCompare(b[0],"it")).map(([cat, items]) => (
+                <div key={cat} style={{marginBottom:12}}>
+                  <p style={{fontFamily:pf,fontSize:10,color:"#5D8C3E",marginBottom:6,borderBottom:"1px solid #333",paddingBottom:4}}>{cat}</p>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                    {items.map(item => (
+                      <button key={item.id} onClick={() => { setSelezionato(item); setRicerca(item.nome); window.scrollTo(0,0); }}
+                        style={{fontFamily:pf,fontSize:9,padding:"6px 10px",background:"#1A1A2E",color:"#E0E0E0",border:"1px solid #444",cursor:"pointer",borderRadius:2,transition:"background 0.2s"}}
+                        onMouseEnter={e => e.target.style.background="#333"}
+                        onMouseLeave={e => e.target.style.background="#1A1A2E"}>
+                        {item.nome}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+          {/* --- GUIDA MATERIALI: DOVE TROVARLI --- */}
+          <div style={{marginTop:24,borderTop:"2px solid #333",paddingTop:16}}>
+            <h3 style={{fontFamily:pf,fontSize:12,color:"#FFD700",textAlign:"center",marginBottom:4}}>🗺 Dove trovo i materiali?</h3>
+            <p style={{fontFamily:pf,fontSize:9,color:"#888",textAlign:"center",marginBottom:12}}>Tap su un materiale per i dettagli</p>
+            {[
+              { nome: "⛏ Ferro grezzo", colore: "#D4D4D4", icon: "🪨", dove: "Sottoterra, tra Y=16 e Y=72 (profondità media)", bioma: "Ovunque — più comune nelle grotte e nelle montagne", aspetto: "Blocchi di pietra con puntini marroni/arancioni", strumento: "Piccone di pietra o meglio", consiglio: "Le grotte grandi sono il posto migliore! Porta tante torce e segui le pareti. Nelle montagne si trova anche in superficie." },
+              { nome: "🔵 Diamante", colore: "#4AEDD9", icon: "💎", dove: "Molto in profondità, tra Y=-64 e Y=-59", bioma: "Ovunque — si trovano nella pietra scura (Deepslate)", aspetto: "Blocchi scuri con puntini azzurri brillanti", strumento: "Piccone di ferro (obbligatorio!) — con quello di pietra non droppa nulla", consiglio: "Usa il branch mining: scava un corridoio lungo a Y=-59 e fai corridoi laterali ogni 2 blocchi. Porta secchi d'acqua per la lava!" },
+              { nome: "⚫ Carbone", colore: "#aaa", icon: "🕳", dove: "Dalla superficie fino a Y=192, a qualsiasi altitudine", bioma: "Ovunque — molto comune nelle montagne e nelle grotte", aspetto: "Blocchi di pietra con puntini neri", strumento: "Piccone di legno o meglio", consiglio: "È il minerale più facile da trovare! Guarda sulle pareti delle montagne e appena entri in una grotta. Se non lo trovi, puoi anche bruciare tronchi nella fornace per fare Charcoal (carbone vegetale, funziona uguale)." },
+              { nome: "🔴 Redstone", colore: "#CC0000", icon: "✨", dove: "In profondità, sotto Y=16", bioma: "Ovunque — si trova vicino ai diamanti", aspetto: "Blocchi di pietra con puntini rossi che BRILLANO quando li colpisci", strumento: "Piccone di ferro (obbligatorio!)", consiglio: "Quando mini un blocco di Redstone ottieni 4-5 polveri! Si trova spesso vicino alla lava nelle grotte profonde. Serve per circuiti, bussole e orologi." },
+              { nome: "✨ Oro grezzo", colore: "#FFD700", icon: "👑", dove: "Tra Y=-64 e Y=32, più comune in profondità", bioma: "Ovunque, ma MOLTO più comune nel bioma Badlands (Mesa) — quelle montagne arancioni a strisce", aspetto: "Blocchi di pietra con puntini gialli", strumento: "Piccone di ferro (obbligatorio!)", consiglio: "Se trovi un bioma Badlands, sei fortunato: l'oro si trova anche in superficie lì! Serve per mele dorate, orologi e per commerciare con i Piglins nel Nether." },
+              { nome: "🟤 Tronchi di legno", colore: "#8B6B4A", icon: "🪓", dove: "In superficie, ovunque ci siano alberi", bioma: "Tutti i biomi con vegetazione — foreste, pianure, taiga, giungle, savane", aspetto: "I tronchi degli alberi! Quercia (marrone), Betulla (bianca), Abete (scuro), Giungla (grigio), Acacia (arancione), Ciliegio (rosa)", strumento: "A mani nude o con l'ascia (più veloce)", consiglio: "Pianta sempre alberi nuovi! Usa la farina d'ossa per farli crescere subito. Tipi diversi di legno danno colori diversi alle costruzioni." },
+              { nome: "🕷 Filo (String)", colore: "#E8E8E8", icon: "🕸", dove: "Drop dai ragni quando li sconfiggi", bioma: "I ragni spawnano di notte ovunque, o nelle miniere abbandonate (con le ragnatele)", aspetto: "Mob neri con occhi rossi — di giorno sono pacifici, di notte attaccano!", strumento: "Spada qualsiasi", consiglio: "Se trovi una miniera abbandonata, rompi le ragnatele con la spada per ottenere filo! Serve per arco, canna da pesca e guinzaglio." },
+              { nome: "🐄 Cuoio (Leather)", colore: "#8B4513", icon: "🧥", dove: "Drop dalle mucche e dai cavalli quando li sconfiggi", bioma: "Le mucche spawnano nelle pianure e nei campi erbosi", aspetto: "Mucche marroni o bianco-nere nei prati", strumento: "Spada qualsiasi", consiglio: "Alleva le mucche con il grano prima di ucciderle così ne avrai sempre! Serve per libri, armatura di cuoio e cornici." },
+              { nome: "🌿 Canna da zucchero", colore: "#5D8C3E", icon: "📜", dove: "Lungo fiumi, laghi e oceani — cresce solo su sabbia/terra che tocca l'acqua", bioma: "Tutti i biomi con acqua — più comune nei deserti e nelle pianure", aspetto: "Piante alte e verdi, sottili, vicino all'acqua", strumento: "A mani nude — rompila e la raccogli", consiglio: "Crea una piantagione! Piazza la canna su sabbia/terra accanto all'acqua e crescerà fino a 3 blocchi. Raccogli solo i blocchi in alto così ricresce. Serve per carta, zucchero e razzi." },
+              { nome: "🐑 Lana (Wool)", colore: "#F0E6D0", icon: "✂️", dove: "Dalle pecore — tosale con le cesoie (non devi ucciderle!)", bioma: "Pianure e campi erbosi", aspetto: "Pecore bianche (più comuni), ma esistono grigie, marroni, nere e raramente rosa!", strumento: "Cesoie (danno 1-3 lane), oppure spada (dà solo 1 lana)", consiglio: "Tosa, non uccidere! Le pecore mangiano l'erba e la lana ricresce. Puoi tingerle con i fiori per lana colorata permanente." },
+              { nome: "🪨 Pietrisco (Cobblestone)", colore: "#7F7F7F", icon: "⛏", dove: "Ovunque sottoterra — il blocco più comune del gioco", bioma: "Tutti, basta scavare!", aspetto: "La pietra grigia liscia diventa pietrisco quando la mini", strumento: "Piccone di legno o meglio", consiglio: "Ne avrai sempre troppo! Usalo per costruire: è resistente ai Ghast e alle esplosioni. Nella fornace diventa Pietra Liscia." },
+              { nome: "🏖 Sabbia (Sand)", colore: "#E8D5A3", icon: "🏝", dove: "Spiagge, deserti, fondi dei fiumi", bioma: "Deserti (tantissima), spiagge, fiumi", aspetto: "Blocchi gialli chiari — cadono se non hanno supporto sotto!", strumento: "Pala (qualsiasi)", consiglio: "Fondila nella fornace per fare Vetro! I deserti sono la migliore fonte. Serve anche per TNT e cemento." },
+              { nome: "🟢 Palla di Slime", colore: "#7CFC00", icon: "🟩", dove: "Drop dagli Slime — mob verdi che saltano", bioma: "Paludi di notte (più facile con luna piena), o sottoterra sotto Y=40 in certi chunk", aspetto: "Cubi verdi trasparenti che saltano — 3 taglie (grande, medio, piccolo)", strumento: "Spada qualsiasi", consiglio: "Le paludi di notte sono il posto migliore! Uccidi quelli grandi: si dividono in medi, poi piccoli. Solo i piccoli droppano le Slimeball." },
+              { nome: "🔥 Barra di Blaze", colore: "#FF8C00", icon: "🏰", dove: "Drop dai Blaze nel Nether", bioma: "Solo nelle Fortezze del Nether — strutture di mattoni scuri con spawner di Blaze", aspetto: "Mob gialli che volano e sparano 3 palle di fuoco", strumento: "Spada di ferro o diamante + scudo!", consiglio: "Costruisci un riparo di cobblestone vicino allo spawner e colpiscili quando si avvicinano. La Pozione di Resistenza al fuoco aiuta tantissimo!" },
+              { nome: "👁 Perla di Ender", colore: "#0D5E4E", icon: "🌀", dove: "Drop dagli Enderman quando li sconfiggi", bioma: "Di notte nell'Overworld (rari), nel Warped Forest del Nether (frequenti), tantissimi nell'End", aspetto: "Mob neri altissimi (3 blocchi!) con occhi viola. Si teletrasportano!", strumento: "Spada di diamante — stai sotto un riparo alto 2 blocchi così non ti raggiungono", consiglio: "Metti una zucca intagliata in testa: puoi guardarli senza farli arrabbiare! Il Warped Forest nel Nether è pieno di Enderman." },
+              { nome: "🪶 Piuma (Feather)", colore: "#F0F0F0", icon: "🐔", dove: "Drop dai polli quando li sconfiggi", bioma: "Pianure, foreste e giungle", aspetto: "Polli bianchi piccoli che fanno 'bawk'", strumento: "Qualsiasi", consiglio: "Alleva i polli con i semi! Lancia uova per far spawnare pulcini. Le piume servono per le frecce." },
+              { nome: "🪨 Selce (Flint)", colore: "#888", icon: "🔥", dove: "Rompendo la ghiaia — 10% di probabilità", bioma: "La ghiaia si trova sottoterra, sulle spiagge e nei fiumi", aspetto: "Blocchi grigi che cadono come la sabbia", strumento: "Pala o piccone", consiglio: "Trucco: piazza e rompi la stessa ghiaia tante volte finché non esce la selce! Serve per acciarino e frecce." },
+              { nome: "🟪 Ossidiana", colore: "#9966CC", icon: "🌋", dove: "Quando l'acqua tocca la lava ferma. Si trova anche nelle caverne profonde", bioma: "Ovunque ci sia lava", aspetto: "Blocchi viola-neri, molto scuri e lucidi", strumento: "SOLO piccone di diamante o netherite! Con altri non droppa nulla", consiglio: "Modo facile: trova un lago di lava sottoterra, versa acqua sopra con un secchio → la lava diventa ossidiana. Serve per il portale del Nether (10 blocchi) e il tavolo degli incantesimi." },
+              { nome: "🌾 Grano (Wheat)", colore: "#DAA520", icon: "🍞", dove: "Si coltiva piantando semi su terra arata vicino all'acqua", bioma: "Ovunque, ma devi coltivarlo tu! I semi si trovano rompendo l'erba alta", aspetto: "Piantine verdi che diventano giallo-dorate quando mature", strumento: "Zappa (per arare la terra) + semi", consiglio: "L'acqua deve essere a massimo 4 blocchi di distanza. Piazza torce vicino per farle crescere anche di notte! Con 3 grani crafti 1 Pane." },
+              { nome: "🟤 Rame grezzo", colore: "#B87333", icon: "🔶", dove: "Sottoterra, tra Y=0 e Y=96 — più comune intorno a Y=48", bioma: "Ovunque — è molto comune, quasi quanto il ferro", aspetto: "Blocchi di pietra con puntini arancioni/marroni. Simile al ferro ma più arancione!", strumento: "Piccone di pietra o meglio", consiglio: "Il rame è facilissimo da trovare, ne troverai tanto scavando. Si ossida nel tempo diventando verde (come la Statua della Libertà!). Serve per parafulmine, cannocchiale e decorazioni." },
+              { nome: "💜 Frammento di Ametista", colore: "#9966CC", icon: "🔮", dove: "Nei Geodi di Ametista — grotte rotonde e speciali sottoterra", bioma: "Ovunque sottoterra — i geodi sono sfere cave con strati: basalto liscio (esterno), calcite (bianca) e ametista (viola, interno)", aspetto: "Cristalli viola appuntiti che crescono dalle pareti del geode. Solo quelli completamente cresciuti (4 stadi) droppano i frammenti!", strumento: "Piccone di ferro o meglio (con Silk Touch prendi il blocco intero)", consiglio: "Non rompere i Budding Amethyst (hanno una X sulla faccia) — sono quelli che fanno crescere nuovi cristalli! Rompi solo i cristalli maturi. Serve per il cannocchiale e il Tinted Glass." },
+              { nome: "🐚 Conchiglia di Nautilus", colore: "#DEB887", icon: "🌊", dove: "Drop dai Drowned (zombie acquatici) che la tengono in mano, o si compra dal Wandering Trader", bioma: "I Drowned spawnano nell'acqua di notte — oceani e fiumi", aspetto: "I Drowned con la conchiglia la tengono visibilmente nella mano sinistra", strumento: "Spada — combatti sott'acqua o attirali a riva!", consiglio: "Il modo più affidabile è aspettare il Wandering Trader (il mercante ambulante con i lama): a volte vende Nautilus Shell per 5 smeraldi. Servono 8 conchiglie per il Conduit!" },
+              { nome: "💙 Cuore del Mare", colore: "#1E90FF", icon: "💎", dove: "SOLO nei forzieri dei tesori sepolti (Buried Treasure)", bioma: "Sotto la sabbia sulle spiagge — segui una Mappa del Tesoro!", aspetto: "Oggetto blu brillante a forma di cuore — unico e rarissimo", strumento: "Pala per scavare la sabbia sulla X della mappa", consiglio: "Trova un relitto (Shipwreck) → apri il forziere della mappa → segui la X rossa → scava sulla X. Il forziere è SEMPRE sotto la sabbia nella posizione esatta della X. Ogni mappa dà 1 solo Cuore del Mare. Serve per craftare il Conduit!" },
+              { nome: "💥 Polvere da sparo", colore: "#888", icon: "💣", dove: "Drop dai Creeper e dalle Streghe quando li sconfiggi", bioma: "I Creeper spawnano di notte ovunque — sono i mob verdi che esplodono!", aspetto: "Mob verdi silenziosi che si avvicinano e fanno 'ssssss' prima di esplodere", strumento: "Spada — colpisci e indietreggia! Sprint + colpo + indietro è la tecnica migliore", consiglio: "Uccidi il Creeper PRIMA che inizi il conto alla rovescia dell'esplosione! Se senti il 'ssss', scappa! Ogni Creeper dà 0-2 polveri. Serve per TNT, razzi e pozioni Splash." },
+            ].map((mat, i) => (
+              <details key={i} style={{marginBottom:4,background:"#1A1A2E",border:"1px solid #333",borderRadius:4}}>
+                <summary style={{fontFamily:pf,fontSize:10,padding:"10px 12px",cursor:"pointer",color:mat.colore,listStyle:"none",display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:14}}>{mat.icon}</span> {mat.nome}
+                </summary>
+                <div style={{padding:"8px 12px 12px",fontSize:10,fontFamily:pf,lineHeight:1.8,color:"#ccc"}}>
+                  <p><b style={{color:"#87CEEB"}}>📍 Dove:</b> {mat.dove}</p>
+                  <p><b style={{color:"#5D8C3E"}}>🌍 Bioma:</b> {mat.bioma}</p>
+                  <p><b style={{color:"#E0E0E0"}}>👀 Aspetto:</b> {mat.aspetto}</p>
+                  <p><b style={{color:"#D4A017"}}>🔧 Strumento:</b> {mat.strumento}</p>
+                  <p style={{marginTop:4,padding:"6px 8px",background:"#252540",borderRadius:3,borderLeft:"3px solid #FFD700"}}><b style={{color:"#FFD700"}}>💡 Consiglio:</b> {mat.consiglio}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [sezione, setSezione] = useState("quest");
+  const [craftingTarget, setCraftingTarget] = useState(null);
+
+  const handleGoToCrafting = (craftId) => {
+    setCraftingTarget(craftId);
+    setSezione("crafting");
+    window.scrollTo(0, 0);
+  };
+
+  return (
+    <div>
+      <header style={{textAlign:"center",padding:"24px 0 8px",borderBottom:"4px solid #5D8C3E"}}>
+        <h1 style={{fontSize:"clamp(14px, 4vw, 22px)",color:"#5D8C3E",textShadow:"2px 2px 0 #000",letterSpacing:1,fontFamily:pf}}>⛏ Minecraft Survival Companion</h1>
+        <p style={{fontSize:10,color:"#87CEEB",marginTop:4,fontFamily:pf}}>Missioni e ricette per avventurieri</p>
+        <details style={{fontSize:9,color:"#aaa",marginTop:6,fontFamily:pf,cursor:"pointer"}}>
+          <summary style={{color:"#FFD700"}}>📍 Come vedere le coordinate su Nintendo Switch?</summary>
+          <p style={{marginTop:4,lineHeight:1.6,padding:"4px 8px",background:"#16213E",borderRadius:4}}>
+            Quando nel sito leggi cose come "Y=-59" o "sotto Y=16", si parla della <b style={{color:"#87CEEB"}}>profondità</b> nel mondo di Minecraft.<br/>
+            <b style={{color:"#5D8C3E"}}>Su Switch:</b> vai in Impostazioni del mondo → Gioco → attiva <b style={{color:"#FFD700"}}>"Mostra coordinate"</b>.<br/>
+            Vedrai 3 numeri in alto a sinistra: X (est/ovest), <b style={{color:"#FFD700"}}>Y (altitudine/profondità)</b>, Z (nord/sud).<br/>
+            Il livello del mare è circa Y=64. Più scendi, più il numero diventa piccolo (anche negativo!).<br/>
+            💎 Diamanti → Y tra -64 e -59 &nbsp; | &nbsp; 🔴 Redstone → sotto Y=16 &nbsp; | &nbsp; ⛏ Ferro → tra Y=16 e Y=72
+          </p>
+        </details>
+      </header>
+      <nav style={{display:"flex",gap:8,padding:"12px 0",justifyContent:"center"}}>
+        <button onClick={() => setSezione("quest")}
+          style={{fontFamily:pf,fontSize:"clamp(10px, 3vw, 13px)",padding:"10px 24px",border:"3px solid #5D8C3E",
+            background:sezione==="quest"?"#5D8C3E":"#1A1A2E",color:sezione==="quest"?"#fff":"#aaa",cursor:"pointer"}}>
+          🗡 Quest
+        </button>
+        <button onClick={() => { setCraftingTarget(null); setSezione("crafting"); }}
+          style={{fontFamily:pf,fontSize:"clamp(10px, 3vw, 13px)",padding:"10px 24px",border:"3px solid #5D8C3E",
+            background:sezione==="crafting"?"#5D8C3E":"#1A1A2E",color:sezione==="crafting"?"#fff":"#aaa",cursor:"pointer"}}>
+          🔨 Crafting
+        </button>
+      </nav>
+      <main style={{padding:"16px 0",minHeight:400}}>
+        {sezione === "quest"
+          ? <QuestSection onGoToCrafting={handleGoToCrafting} />
+          : <CraftingSection initialCraftId={craftingTarget} onCraftIdConsumed={() => setCraftingTarget(null)} />
+        }
+      </main>
+      <footer style={{textAlign:"center",padding:"20px 0",fontSize:9,color:"#555",borderTop:"2px solid #333",fontFamily:pf}}>
+        <p>Fatto con ❤️ da Luca & Samuel</p>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
