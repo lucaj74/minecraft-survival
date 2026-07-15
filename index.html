@@ -3,10 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="HthIPGOSvEExM4-JoCtJdn35gYueXAe6dh5e-RhsNx8" />
+<link rel="canonical" href="https://www.minecraftsurvival.it/">
+<meta name="description" content="Missioni giornaliere e configuratore di crafting per le tue avventure in Minecraft Survival. Gratis, senza registrazione e senza profilazione.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Minecraft Survival Companion">
+<meta property="og:title" content="Minecraft Survival Companion">
+<meta property="og:description" content="Missioni giornaliere e ricette di crafting per le tue avventure in Minecraft Survival. Senza registrazione.">
+<meta property="og:url" content="https://www.minecraftsurvival.it/">
+<meta property="og:image" content="https://www.minecraftsurvival.it/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Minecraft Survival Companion">
+<meta name="twitter:description" content="Missioni giornaliere e ricette di crafting per le tue avventure in Minecraft Survival.">
+<meta name="twitter:image" content="https://www.minecraftsurvival.it/og-image.png">
 <title>⛏ Minecraft Survival Companion</title>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow-x: hidden; max-width: 100%; }
 body { font-family: 'Silkscreen', 'Courier New', monospace; background: linear-gradient(180deg, #1A1A2E 0%, #16213E 100%); min-height: 100vh; color: #E0E0E0; }
 #root { max-width: 800px; margin: 0 auto; padding: 0 12px; }
 </style>
@@ -8135,7 +8156,7 @@ function FilterSelect({
     }
   }, /*#__PURE__*/React.createElement("label", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: "#87CEEB",
       textTransform: "uppercase",
       fontFamily: pf
@@ -8145,7 +8166,7 @@ function FilterSelect({
     onChange: e => onChange(e.target.value),
     style: {
       fontFamily: pf,
-      fontSize: 11,
+      fontSize: 14,
       padding: "8px 6px",
       background: "#2a2a3e",
       color: "#E0E0E0",
@@ -8184,7 +8205,7 @@ function QuestCard({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       padding: "3px 8px",
       color: "#fff",
       fontFamily: pf,
@@ -8192,7 +8213,7 @@ function QuestCard({
     }
   }, q.difficolta), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       padding: "3px 8px",
       background: "#1A1A2E",
       color: "#87CEEB",
@@ -8201,7 +8222,7 @@ function QuestCard({
     }
   }, q.categoria), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       padding: "3px 8px",
       background: "#1A1A2E",
       color: "#aaa",
@@ -8209,7 +8230,7 @@ function QuestCard({
     }
   }, "\u23F1 ", q.durata, " min"), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       padding: "3px 8px",
       background: "#1A1A2E",
       color: "#b8a9c9",
@@ -8218,21 +8239,21 @@ function QuestCard({
     }
   }, "\uD83D\uDCCA ", q.livello)), /*#__PURE__*/React.createElement("h3", {
     style: {
-      fontSize: 14,
+      fontSize: 17,
       color: "#FFD700",
       marginBottom: 6,
       fontFamily: pf
     }
   }, q.titolo), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       lineHeight: 1.6,
       color: "#ccc",
       marginBottom: 10
     }
   }, q.descrizione), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       lineHeight: 1.8,
       color: "#aaa",
       marginBottom: 10
@@ -8247,7 +8268,7 @@ function QuestCard({
         onClick: () => onGoToCrafting(craftId),
         style: {
           fontFamily: pf,
-          fontSize: 10,
+          fontSize: 13,
           color: "#4AEDD9",
           background: "none",
           border: "none",
@@ -8269,7 +8290,7 @@ function QuestCard({
     onClick: onPreferita,
     style: {
       fontFamily: pf,
-      fontSize: 10,
+      fontSize: 13,
       padding: "8px 12px",
       background: preferita ? "#2e2a1a" : "#1A1A2E",
       color: preferita ? "#FFD700" : "#aaa",
@@ -8280,7 +8301,7 @@ function QuestCard({
     onClick: onCompleta,
     style: {
       fontFamily: pf,
-      fontSize: 10,
+      fontSize: 13,
       padding: "8px 12px",
       background: completata ? "#1a2e1a" : "#1A1A2E",
       color: completata ? "#5D8C3E" : "#aaa",
@@ -8381,7 +8402,7 @@ function QuestSection({
   const numComp = questCompletate.length;
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: "#FFD700",
       textAlign: "center",
       padding: "8px 0",
@@ -8393,7 +8414,8 @@ function QuestSection({
       display: "flex",
       gap: 4,
       marginBottom: 12,
-      justifyContent: "center"
+      justifyContent: "center",
+      flexWrap: "wrap"
     }
   }, [{
     key: "genera",
@@ -8412,7 +8434,7 @@ function QuestSection({
     onClick: () => setSottoSezione(tab.key),
     style: {
       fontFamily: pf,
-      fontSize: "clamp(9px, 2.5vw, 11px)",
+      fontSize: "clamp(12px, 3.2vw, 15px)",
       padding: "8px 14px",
       background: sottoSezione === tab.key ? "#5D8C3E" : "#1A1A2E",
       color: sottoSezione === tab.key ? "#fff" : "#aaa",
@@ -8449,7 +8471,7 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("label", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: "#87CEEB",
       textTransform: "uppercase",
       fontFamily: pf
@@ -8465,7 +8487,7 @@ function QuestSection({
     onClick: () => setLivello(l),
     style: {
       fontFamily: pf,
-      fontSize: 9,
+      fontSize: 12,
       padding: "6px 8px",
       background: livello === l ? "#8E44AD" : "#2a2a3e",
       color: livello === l ? "#fff" : "#aaa",
@@ -8480,7 +8502,7 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("label", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: "#87CEEB",
       textTransform: "uppercase",
       fontFamily: pf
@@ -8495,7 +8517,7 @@ function QuestSection({
     onClick: () => setNumQuest(n),
     style: {
       fontFamily: pf,
-      fontSize: 11,
+      fontSize: 14,
       padding: "8px 14px",
       background: numQuest === n ? "#5D8C3E" : "#2a2a3e",
       color: numQuest === n ? "#fff" : "#aaa",
@@ -8506,7 +8528,7 @@ function QuestSection({
     onClick: genera,
     style: {
       fontFamily: pf,
-      fontSize: 14,
+      fontSize: 17,
       width: "100%",
       padding: 14,
       background: "linear-gradient(180deg, #5D8C3E, #4a7030)",
@@ -8537,7 +8559,7 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#888"
     }
   }, "Premi \"Genera Quest!\" per ricevere le tue missioni, avventuriero!"))), sottoSezione === "preferiti" && /*#__PURE__*/React.createElement("div", null, questPreferite.length === 0 ? /*#__PURE__*/React.createElement("div", {
@@ -8547,18 +8569,18 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 28,
+      fontSize: 30,
       marginBottom: 8
     }
   }, "\u2B50"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#888",
       fontFamily: pf
     }
   }, "Nessuna quest nei preferiti!"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#666",
       fontFamily: pf,
       marginTop: 4
@@ -8571,7 +8593,7 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#888",
       textAlign: "center",
       fontFamily: pf
@@ -8591,18 +8613,18 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 28,
+      fontSize: 30,
       marginBottom: 8
     }
   }, "\u2705"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#888",
       fontFamily: pf
     }
   }, "Nessuna quest completata!"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#666",
       fontFamily: pf,
       marginTop: 4
@@ -8615,7 +8637,7 @@ function QuestSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#888",
       textAlign: "center",
       fontFamily: pf
@@ -8643,7 +8665,7 @@ function QuestSection({
     }
   })), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: "#5D8C3E",
       textAlign: "center",
       marginTop: 4,
@@ -8677,13 +8699,13 @@ function CraftingDetail({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#87CEEB",
       fontFamily: pf
     }
   }, item.categoria), /*#__PURE__*/React.createElement("h2", {
     style: {
-      fontSize: "clamp(14px, 4vw, 20px)",
+      fontSize: "clamp(17px, 4.6vw, 24px)",
       color: "#FFD700",
       marginTop: 4,
       fontFamily: pf
@@ -8695,7 +8717,7 @@ function CraftingDetail({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#87CEEB",
       marginBottom: 8,
       fontFamily: pf
@@ -8725,7 +8747,7 @@ function CraftingDetail({
     }
   }, cell && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 8,
+      fontSize: 11,
       color: "#fff",
       textShadow: "1px 1px 2px #000",
       textAlign: "center",
@@ -8739,7 +8761,7 @@ function CraftingDetail({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#FFD700",
       marginBottom: 10,
       fontFamily: pf,
@@ -8774,7 +8796,7 @@ function CraftingDetail({
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
+        fontSize: 15,
         color: "#fff",
         fontFamily: pf,
         fontWeight: "bold"
@@ -8783,7 +8805,7 @@ function CraftingDetail({
       onClick: () => onSelect(k),
       style: {
         fontFamily: pf,
-        fontSize: 9,
+        fontSize: 12,
         color: "#4AEDD9",
         background: "#4AEDD911",
         border: "1px solid #4AEDD944",
@@ -8793,7 +8815,7 @@ function CraftingDetail({
       }
     }, "\uD83D\uDCD6 Ricetta")), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: 10,
+        fontSize: 13,
         color: "#aaa",
         lineHeight: 1.6,
         paddingLeft: 32
@@ -8801,7 +8823,7 @@ function CraftingDetail({
     }, info.come));
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#5D8C3E",
       marginBottom: 10,
       fontFamily: pf,
@@ -8831,13 +8853,13 @@ function CraftingDetail({
     }
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 14,
       color: "#fff",
       fontFamily: pf
     }
   }, ITEM_NAMES[mat.id] || mat.id, " \xD7 ", mat.q), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#9ae69a",
       lineHeight: 1.5,
       marginTop: 2
@@ -8877,7 +8899,7 @@ function CraftingSection({
     },
     style: {
       fontFamily: pf,
-      fontSize: 12,
+      fontSize: 15,
       width: "100%",
       padding: 12,
       background: "#2a2a3e",
@@ -8896,7 +8918,7 @@ function CraftingSection({
     }
   }, risultati.length === 0 && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#888"
     }
   }, "Nessun oggetto trovato"), risultati.map(item => /*#__PURE__*/React.createElement("button", {
@@ -8907,7 +8929,7 @@ function CraftingSection({
     },
     style: {
       fontFamily: pf,
-      fontSize: 11,
+      fontSize: 14,
       padding: "10px 12px",
       background: "#252540",
       border: "2px solid #333",
@@ -8919,7 +8941,7 @@ function CraftingSection({
     }
   }, item.nome, " ", /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 9,
+      fontSize: 12,
       color: "#888"
     }
   }, "(", item.categoria, ")")))), selezionato && /*#__PURE__*/React.createElement(CraftingDetail, {
@@ -8937,7 +8959,7 @@ function CraftingSection({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 12,
+      fontSize: 15,
       color: "#888",
       textAlign: "center"
     }
@@ -8960,7 +8982,7 @@ function CraftingSection({
     },
     style: {
       fontFamily: pf,
-      fontSize: 9,
+      fontSize: 12,
       padding: "8px 12px",
       background: "#252540",
       color: "#87CEEB",
@@ -8976,7 +8998,7 @@ function CraftingSection({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: pf,
-      fontSize: 12,
+      fontSize: 15,
       color: "#FFD700",
       textAlign: "center",
       marginBottom: 12
@@ -8997,7 +9019,7 @@ function CraftingSection({
     }, /*#__PURE__*/React.createElement("p", {
       style: {
         fontFamily: pf,
-        fontSize: 10,
+        fontSize: 13,
         color: "#5D8C3E",
         marginBottom: 6,
         borderBottom: "1px solid #333",
@@ -9018,7 +9040,7 @@ function CraftingSection({
       },
       style: {
         fontFamily: pf,
-        fontSize: 9,
+        fontSize: 12,
         padding: "6px 10px",
         background: "#1A1A2E",
         color: "#E0E0E0",
@@ -9039,7 +9061,7 @@ function CraftingSection({
   }, /*#__PURE__*/React.createElement("h3", {
     style: {
       fontFamily: pf,
-      fontSize: 12,
+      fontSize: 15,
       color: "#FFD700",
       textAlign: "center",
       marginBottom: 4
@@ -9047,7 +9069,7 @@ function CraftingSection({
   }, "\uD83D\uDDFA Dove trovo i materiali?"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: pf,
-      fontSize: 9,
+      fontSize: 12,
       color: "#888",
       textAlign: "center",
       marginBottom: 12
@@ -9279,7 +9301,7 @@ function CraftingSection({
   }, /*#__PURE__*/React.createElement("summary", {
     style: {
       fontFamily: pf,
-      fontSize: 10,
+      fontSize: 13,
       padding: "10px 12px",
       cursor: "pointer",
       color: mat.colore,
@@ -9290,12 +9312,12 @@ function CraftingSection({
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 14
+      fontSize: 17
     }
   }, mat.icon), " ", mat.nome), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "8px 12px 12px",
-      fontSize: 10,
+      fontSize: 13,
       fontFamily: pf,
       lineHeight: 1.8,
       color: "#ccc"
@@ -9346,7 +9368,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("h1", {
     style: {
-      fontSize: "clamp(14px, 4vw, 22px)",
+      fontSize: "clamp(17px, 4.6vw, 26px)",
       color: "#5D8C3E",
       textShadow: "2px 2px 0 #000",
       letterSpacing: 1,
@@ -9354,16 +9376,16 @@ function App() {
     }
   }, "\u26CF Minecraft Survival Companion"), /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: 10,
+      fontSize: 13,
       color: "#87CEEB",
       marginTop: 4,
       fontFamily: pf
     }
   }, "Missioni e ricette per avventurieri"), /*#__PURE__*/React.createElement("details", {
     style: {
-      fontSize: 9,
-      color: "#aaa",
-      marginTop: 6,
+      fontSize: 15,
+      color: "#ccc",
+      marginTop: 8,
       fontFamily: pf,
       cursor: "pointer"
     }
@@ -9371,31 +9393,64 @@ function App() {
     style: {
       color: "#FFD700"
     }
-  }, "\uD83D\uDCCD Come vedere le coordinate su Nintendo Switch?"), /*#__PURE__*/React.createElement("p", {
+  }, "🧭 Come leggere le coordinate di Minecraft"), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 4,
-      lineHeight: 1.6,
-      padding: "4px 8px",
+      marginTop: 6,
+      lineHeight: 1.7,
+      padding: "8px 10px",
       background: "#16213E",
-      borderRadius: 4
+      borderRadius: 4,
+      textAlign: "left",
+      color: "#ddd"
     }
-  }, "Quando nel sito leggi cose come \"Y=-59\" o \"sotto Y=16\", si parla della ", /*#__PURE__*/React.createElement("b", {
+  }, /*#__PURE__*/React.createElement("p", null, "Le coordinate sono ", /*#__PURE__*/React.createElement("b", null, "3 numeri"), " che ti dicono dove ti trovi nel mondo. Compaiono in alto a sinistra (se le hai attivate) e sono ", /*#__PURE__*/React.createElement("b", { style: { color: "#87CEEB" } }, "X"), ", ", /*#__PURE__*/React.createElement("b", { style: { color: "#FFD700" } }, "Y"), " e ", /*#__PURE__*/React.createElement("b", { style: { color: "#87CEEB" } }, "Z"), ":"), /*#__PURE__*/React.createElement("p", { style: { marginTop: 6 } }, /*#__PURE__*/React.createElement("b", { style: { color: "#87CEEB" } }, "X"), " → quanto sei spostato a est/ovest", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("b", { style: { color: "#87CEEB" } }, "Z"), " → quanto sei spostato a nord/sud", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("b", { style: { color: "#FFD700" } }, "Y"), " → ", /*#__PURE__*/React.createElement("b", { style: { color: "#FFD700" } }, "quanto sei in alto o in profondità"), ": è il numero più importante per scavare!"), /*#__PURE__*/React.createElement("p", { style: { marginTop: 8 } }, "Il ", /*#__PURE__*/React.createElement("b", null, "livello del mare è circa Y=64"), ". Più ", /*#__PURE__*/React.createElement("b", null, "scendi"), ", più ", /*#__PURE__*/React.createElement("b", null, "Y diminuisce"), " (può diventare negativo, fino a ", /*#__PURE__*/React.createElement("b", null, "-64"), ", il fondo del mondo); più sali, più aumenta."), /*#__PURE__*/React.createElement("p", { style: { marginTop: 8 } }, "Così, quando nel sito leggi «", /*#__PURE__*/React.createElement("b", { style: { color: "#FFD700" } }, "Y=-59"), "» o «", /*#__PURE__*/React.createElement("b", { style: { color: "#FFD700" } }, "sotto Y=16"), "», ti sta dicendo a che profondità scavare. Qualche esempio utile:"), /*#__PURE__*/React.createElement("p", { style: { marginTop: 6, fontWeight: "bold" } }, "💎 Diamanti → Y tra -64 e -59   ·   🔴 Redstone → sotto Y=16   ·   ⛏ Ferro → tra Y=16 e Y=72"), /*#__PURE__*/React.createElement("p", { style: { marginTop: 8, color: "#8FA88F" } }, "Non vedi le coordinate? Attiva «Mostra coordinate» nelle impostazioni del mondo (su Nintendo Switch: Impostazioni del mondo → Gioco → Mostra coordinate)."))), /*#__PURE__*/React.createElement("details", {
     style: {
-      color: "#87CEEB"
+      fontSize: 15,
+      color: "#ccc",
+      marginTop: 8,
+      fontFamily: pf,
+      cursor: "pointer"
     }
-  }, "profondit\xE0"), " nel mondo di Minecraft.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("b", {
+  }, /*#__PURE__*/React.createElement("summary", {
     style: {
       color: "#5D8C3E"
     }
-  }, "Su Switch:"), " vai in Impostazioni del mondo \u2192 Gioco \u2192 attiva ", /*#__PURE__*/React.createElement("b", {
+  }, "\ud83d\udee1\ufe0f Niente registrazione, niente profilazione"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      lineHeight: 1.7,
+      padding: "8px 10px",
+      background: "#16213E",
+      borderRadius: 4,
+      textAlign: "left",
+      color: "#ddd"
+    }
+  }, /*#__PURE__*/React.createElement("p", null, "minecraftsurvival.it \u00e8 libero e senza account: non ti chiediamo di registrarti e ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "#87CEEB"
+    }
+  }, "non raccogliamo n\u00e9 tracciamo alcun dato personale"), ". Nessuna profilazione, nessuna pubblicit\u00e0."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      marginTop: 8
+    }
+  }, "Proprio perch\u00e9 non c'\u00e8 un account, i tuoi progressi (le ", /*#__PURE__*/React.createElement("b", null, "missioni completate"), " e i ", /*#__PURE__*/React.createElement("b", null, "preferiti"), ") vengono salvati solo qui, nella ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: "#87CEEB"
+    }
+  }, "memoria del tuo browser"), " (la \u00abcache\u00bb), su questo dispositivo."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      marginTop: 8
+    }
+  }, "\ud83d\udc49 In pratica: se ", /*#__PURE__*/React.createElement("b", {
     style: {
       color: "#FFD700"
     }
-  }, "\"Mostra coordinate\""), ".", /*#__PURE__*/React.createElement("br", null), "Vedrai 3 numeri in alto a sinistra: X (est/ovest), ", /*#__PURE__*/React.createElement("b", {
+  }, "cancelli la cache"), " o i dati di navigazione \u2014 oppure apri il sito da un altro telefono o browser \u2014 i progressi non ci saranno pi\u00f9 e la pagina ", /*#__PURE__*/React.createElement("b", null, "ripartir\u00e0 da zero"), ". Non \u00e8 un errore: \u00e8 il \u00abprezzo\u00bb della tua privacy. \ud83e\udde1"), /*#__PURE__*/React.createElement("p", {
     style: {
-      color: "#FFD700"
+      marginTop: 8,
+      color: "#8FA88F"
     }
-  }, "Y (altitudine/profondit\xE0)"), ", Z (nord/sud).", /*#__PURE__*/React.createElement("br", null), "Il livello del mare \xE8 circa Y=64. Pi\xF9 scendi, pi\xF9 il numero diventa piccolo (anche negativo!).", /*#__PURE__*/React.createElement("br", null), "\uD83D\uDC8E Diamanti \u2192 Y tra -64 e -59 \xA0 | \xA0 \uD83D\uDD34 Redstone \u2192 sotto Y=16 \xA0 | \xA0 \u26CF Ferro \u2192 tra Y=16 e Y=72"))), /*#__PURE__*/React.createElement("nav", {
+  }, "Consiglio da avventuriero: gioca sempre dallo stesso browser e non cancellare i dati del sito, cos\u00ec tieni i tuoi progressi.")))), /*#__PURE__*/React.createElement("nav", {
     style: {
       display: "flex",
       gap: 8,
@@ -9406,7 +9461,7 @@ function App() {
     onClick: () => setSezione("quest"),
     style: {
       fontFamily: pf,
-      fontSize: "clamp(10px, 3vw, 13px)",
+      fontSize: "clamp(13px, 3.6vw, 16px)",
       padding: "10px 24px",
       border: "3px solid #5D8C3E",
       background: sezione === "quest" ? "#5D8C3E" : "#1A1A2E",
@@ -9420,7 +9475,7 @@ function App() {
     },
     style: {
       fontFamily: pf,
-      fontSize: "clamp(10px, 3vw, 13px)",
+      fontSize: "clamp(13px, 3.6vw, 16px)",
       padding: "10px 24px",
       border: "3px solid #5D8C3E",
       background: sezione === "crafting" ? "#5D8C3E" : "#1A1A2E",
@@ -9441,12 +9496,31 @@ function App() {
     style: {
       textAlign: "center",
       padding: "20px 0",
-      fontSize: 9,
+      fontSize: 12,
       color: "#555",
       borderTop: "2px solid #333",
       fontFamily: pf
     }
-  }, /*#__PURE__*/React.createElement("p", null, "Fatto con \u2764\uFE0F da Luca & Samuel")));
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      marginTop: 0,
+      color: "#777",
+      fontSize: 11,
+      lineHeight: 1.7,
+      maxWidth: 680,
+      marginLeft: "auto",
+      marginRight: "auto",
+      padding: "0 12px"
+    }
+  }, "\u00A9 2026 minecraftsurvival.it \u00E8 un progetto di divulgazione culturale senza fini di lucro realizzato da ", /*#__PURE__*/React.createElement("a", {
+    href: "https://ljcomunicazione.it",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: "#D4AF37",
+      textDecoration: "underline"
+    }
+  }, "LJ Progetti di comunicazione"), " \u00B7 P.IVA 06413550481")));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
 
